@@ -161,10 +161,10 @@ export class Account {
   // POSTS
   // ============================================
 
-  getCachedPosts(limit) {
-    return Array.from(this.posts.values())
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, limit);
+  getCachedPosts(limit = null) {
+    const sortedPosts = Array.from(this.posts.values())
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return limit ? sortedPosts.slice(0, limit) : sortedPosts;
   }
 
   buildStatusesUrl(options = {}) {

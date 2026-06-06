@@ -270,11 +270,12 @@ export class List {
     const allPosts = [];
     
     for (const account of this.accounts.values()) {
-      // If no sinceId/maxId provided, get cached posts. Otherwise fetch from API.
-      // For initial load without sinceId/maxId, we want the latest posts from each account.
+      // If no sinceId/maxId provided, get ALL cached posts (not limited).
+      // Otherwise fetch from API with limit.
+      // For initial load, we want to consider all cached posts to find the true lowest/highest IDs
       const posts = sinceId || maxId 
         ? await account.fetchPosts({ limit, sinceId, maxId })
-        : account.getCachedPosts(limit);
+        : account.getCachedPosts(); // No limit - get all cached posts for tracking
       allPosts.push(...posts);
     }
     
@@ -289,8 +290,14 @@ export class List {
       if (!this.highestPostId || BigInt(highest) > BigInt(this.highestPostId || '0')) {
         this.highestPostId = highest;
       }
-      if (!this.lowestPostId || BigInt(lowest) < BigInt(this.lowestPostId || lowest)) {
-        this.lowestPostId = lowest;
+      // Update lowestPostId from ALL cached posts, not just the displayed ones
+      // Find the actual lowest from allPosts, not from sortedPosts (which is limited)
+      if (allPosts.length > 0) {
+        const allPostsSorted = [...allPosts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const trueLowest = allPostsSorted[allPostsSorted.length - 1].mastodonId;
+        if (!this.lowestPostId || BigInt(trueLowest) < BigInt(this.lowestPostId || trueLowest)) {
+          this.lowestPostId = trueLowest;
+        }
       }
       this.saveToCache();
     }
@@ -314,7 +321,7 @@ export class List {
       }
     }
     
-    const sortedPosts = this.sortAndDeduplicate(allPosts);
+    const sortedPosts = this.sortAndDeduplicate(allPosts, 20);
     
     // Update tracking for new posts
     if (sortedPosts.length > 0) {
@@ -330,30 +337,31 @@ export class List {
   async getOlderPosts() {
     const allPosts = [];
     
-    // Fetch older posts from each account using their own lowestPostId
-    // This ensures we don't miss posts from accounts that have lower IDs
-    for (const account of this.accounts.values()) {
-      // Use the account's own lowestPostId, or List's lowestPostId if account has none
-      // This prevents gaps when some accounts have older posts than others
-      const maxId = account.lowestPostId || this.lowestPostId;
-      if (maxId) {
+    // Use List's lowestPostId as the maxId for all accounts
+    // This ensures we get posts older than the oldest post we've shown across all accounts
+    const maxId = this.lowestPostId;
+    
+    if (maxId) {
+      for (const account of this.accounts.values()) {
         const olderPosts = await account.fetchPosts({ limit: 20, maxId });
         allPosts.push(...olderPosts);
       }
-    }
-    
-    const sortedPosts = this.sortAndDeduplicate(allPosts);
-    
-    // Update List's tracking to the lowest of all accounts
-    if (sortedPosts.length > 0) {
-      const lowest = sortedPosts[sortedPosts.length - 1].mastodonId;
-      if (!this.lowestPostId || BigInt(lowest) < BigInt(this.lowestPostId)) {
-        this.lowestPostId = lowest;
-        this.saveToCache();
+      
+      const sortedPosts = this.sortAndDeduplicate(allPosts, 20);
+      
+      // Update List's tracking to the lowest of all returned posts
+      if (sortedPosts.length > 0) {
+        const lowest = sortedPosts[sortedPosts.length - 1].mastodonId;
+        if (BigInt(lowest) < BigInt(this.lowestPostId)) {
+          this.lowestPostId = lowest;
+          this.saveToCache();
+        }
       }
+      
+      return sortedPosts;
     }
     
-    return sortedPosts;
+    return [];
   }
 
   hasMorePosts() {
