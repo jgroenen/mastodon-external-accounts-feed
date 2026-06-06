@@ -7,7 +7,23 @@
 import { Account } from './Account.js';
 import { getFromDB, putInDB } from '../utils/db.js';
 
+// CONSTANTS
 // ============================================
+
+const DB_TABLE = 'lists';
+const EVENT_POSTS_UPDATED = 'postsUpdated';
+
+export class List {
+=======
+// ============================================
+// CONSTANTS
+// ============================================
+
+const DB_TABLE = 'lists';
+const EVENT_POSTS_UPDATED = 'postsUpdated';
+const BATCH_SIZE = 10; // Number of posts to load per infinite scroll batch
+
+export class List {============================================
 // CONSTANTS
 // ============================================
 
@@ -316,12 +332,13 @@ export class List {
       // Use the account's own highestPostId, or List's highestPostId if account has none
       const accountSinceId = account.highestPostId || sinceId;
       if (accountSinceId) {
-        const newPosts = await account.fetchPosts({ limit: 20, sinceId: accountSinceId });
+        // Fetch 2x batch size to have enough to select from
+        const newPosts = await account.fetchPosts({ limit: BATCH_SIZE * 2, sinceId: accountSinceId });
         allPosts.push(...newPosts);
       }
     }
     
-    const sortedPosts = this.sortAndDeduplicate(allPosts, 20);
+    const sortedPosts = this.sortAndDeduplicate(allPosts, BATCH_SIZE);
     
     // Update tracking for new posts
     if (sortedPosts.length > 0) {
@@ -343,11 +360,12 @@ export class List {
     
     if (maxId) {
       for (const account of this.accounts.values()) {
-        const olderPosts = await account.fetchPosts({ limit: 20, maxId });
+        // Fetch 2x batch size to have enough to select from
+        const olderPosts = await account.fetchPosts({ limit: BATCH_SIZE * 2, maxId });
         allPosts.push(...olderPosts);
       }
       
-      const sortedPosts = this.sortAndDeduplicate(allPosts, 20);
+      const sortedPosts = this.sortAndDeduplicate(allPosts, BATCH_SIZE);
       
       // Update List's tracking to the lowest of all returned posts
       if (sortedPosts.length > 0) {
