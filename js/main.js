@@ -5,6 +5,7 @@
 
 import { app } from './models/App.js';
 import { AppView } from './views/AppView.js';
+import { initModal } from './utils/modal.js';
 
 // ============================================
 // INITIALIZATION
@@ -13,6 +14,9 @@ import { AppView } from './views/AppView.js';
 async function init() {
   const appView = new AppView();
   appView.initTheme();
+  
+  // Initialize modal
+  initModal();
   
   try {
     const config = await fetch('accounts.json').then(res => res.json());
