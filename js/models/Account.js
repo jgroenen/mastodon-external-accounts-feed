@@ -26,7 +26,8 @@ export class Account {
     this.instance = instance;
     this.username = username;
     this.sourceList = sourceList;
-    this.id = `${instance}:${username}`;
+    // Include sourceList in ID to ensure uniqueness per list
+    this.id = sourceList ? `${instance}:${username}:${sourceList}` : `${instance}:${username}`;
     
     // Account data from Mastodon API
     this.mastodonId = null;
@@ -96,7 +97,11 @@ export class Account {
     this.highestPostId = data.highestPostId;
     this.lowestPostId = data.lowestPostId;
     this.lastFetched = data.fetchedAt;
-    this.sourceList = data.sourceList || this.sourceList;
+    // Only use sourceList from cache if we don't already have one (from constructor)
+    // This prevents cross-contamination when same account is in multiple lists
+    if (!this.sourceList && data.sourceList) {
+      this.sourceList = data.sourceList;
+    }
   }
 
   async loadCachedPosts() {
@@ -235,7 +240,7 @@ export class Account {
     }
     
     return {
-      id: `${this.instance}:${toot.id}`,
+      id: this.sourceList ? `${this.instance}:${toot.id}:${this.sourceList}` : `${this.instance}:${toot.id}`,
       mastodonId: toot.id,
       instance: this.instance,
       url: url,

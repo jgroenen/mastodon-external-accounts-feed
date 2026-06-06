@@ -306,15 +306,19 @@ export class List {
     const sinceId = this.highestPostId;
     
     for (const account of this.accounts.values()) {
-      const newPosts = await account.fetchPosts({ limit: 20, sinceId });
-      allPosts.push(...newPosts);
+      // Use the account's own highestPostId, or List's highestPostId if account has none
+      const accountSinceId = account.highestPostId || sinceId;
+      if (accountSinceId) {
+        const newPosts = await account.fetchPosts({ limit: 20, sinceId: accountSinceId });
+        allPosts.push(...newPosts);
+      }
     }
     
     const sortedPosts = this.sortAndDeduplicate(allPosts);
     
     // Update tracking for new posts
     if (sortedPosts.length > 0) {
-      if (!this.highestPostId || sortedPosts[0].mastodonId > this.highestPostId) {
+      if (!this.highestPostId || BigInt(sortedPosts[0].mastodonId) > BigInt(this.highestPostId || '0')) {
         this.highestPostId = sortedPosts[0].mastodonId;
       }
       this.saveToCache();
@@ -326,13 +330,16 @@ export class List {
   async getOlderPosts() {
     const allPosts = [];
     
-    // Use List's lowestPostId as the maxId for all accounts
-    // This ensures we get posts older than what we've already shown
-    const maxId = this.lowestPostId;
-    
+    // Fetch older posts from each account using their own lowestPostId
+    // This ensures we don't miss posts from accounts that have lower IDs
     for (const account of this.accounts.values()) {
-      const olderPosts = await account.fetchPosts({ limit: 20, maxId });
-      allPosts.push(...olderPosts);
+      // Use the account's own lowestPostId, or List's lowestPostId if account has none
+      // This prevents gaps when some accounts have older posts than others
+      const maxId = account.lowestPostId || this.lowestPostId;
+      if (maxId) {
+        const olderPosts = await account.fetchPosts({ limit: 20, maxId });
+        allPosts.push(...olderPosts);
+      }
     }
     
     const sortedPosts = this.sortAndDeduplicate(allPosts);
@@ -340,7 +347,7 @@ export class List {
     // Update List's tracking to the lowest of all accounts
     if (sortedPosts.length > 0) {
       const lowest = sortedPosts[sortedPosts.length - 1].mastodonId;
-      if (!this.lowestPostId || lowest < this.lowestPostId) {
+      if (!this.lowestPostId || BigInt(lowest) < BigInt(this.lowestPostId)) {
         this.lowestPostId = lowest;
         this.saveToCache();
       }
