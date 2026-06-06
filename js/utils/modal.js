@@ -107,7 +107,7 @@ function handleFormSubmit(event) {
   }
   
   // Bouw de post URL voor de gebruikers instance
-  // Mastodon web interface: https://instance/@user@original-instance/post-id
+  // Mastodon web interface: https://user-instance/@user@original-instance/post-id
   try {
     const url = new URL(currentPostUrl);
     const pathParts = url.pathname.split('/').filter(p => p);
@@ -125,19 +125,36 @@ function handleFormSubmit(event) {
       }
     }
     
-    // Als we geen userPart vonden, probeer dan @username uit de hostname
-    if (!userPart) {
-      // Probeer @username@instance format
+    // Als we geen userPart vonden met @, probeer dan username uit hostname
+    if (!userPart || !userPart.startsWith('@')) {
+      // Probeer @username@instance format uit pathname
       const atIndex = pathParts.findIndex(p => p.startsWith('@'));
       if (atIndex !== -1) {
         userPart = pathParts[atIndex];
+      } else {
+        // Als laatste redmiddel: useer de laatste @ in de URL
+        const atMatch = currentPostUrl.match(/@([^\/]+)/);
+        if (atMatch) {
+          userPart = '@' + atMatch[1];
+        }
       }
     }
     
-    // Bouw de nieuwe URL
+    // Voeg de originale instance toe aan de username
+    // userPart is iets als @gebruiker, we moeten @gebruiker@original-instance maken
     if (userPart && postId) {
-      const newUrl = `${normalizedInstance}/${userPart}/${postId}`;
-      window.open(newUrl, '_blank');
+      // Check of userPart al de vollledige federaal identifier heeft
+      if (userPart.includes('@', 1)) {
+        // userPart is al @gebruiker@instance
+        const newUrl = `${normalizedInstance}/${userPart}/${postId}`;
+        window.open(newUrl, '_blank');
+      } else {
+        // userPart is alleen @gebruiker, voeg @original-instance toe
+        const originalHost = url.hostname;
+        const fullUserPart = `${userPart}@${originalHost}`;
+        const newUrl = `${normalizedInstance}/${fullUserPart}/${postId}`;
+        window.open(newUrl, '_blank');
+      }
     } else {
       // Fallback: open gewoon de originele post
       window.open(currentPostUrl, '_blank');
