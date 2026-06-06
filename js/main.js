@@ -42,7 +42,6 @@ async function init() {
   } catch (error) {
     console.error('Initialization error:', error);
     appView.showError('Fout bij initialiseren van dashboard. Check accounts.json.');
-    appView.setStatus('Fout');
   }
 }
 

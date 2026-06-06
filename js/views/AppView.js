@@ -7,12 +7,24 @@ import { ListView } from './ListView.js';
 
 export class AppView {
   constructor() {
-    // DOM elements
+    // STATUS
+  // ============================================
+
+  setStatus(text) {
+    this.statusElement.textContent = text;
+  }
+
+  showError(message) {
+=======
+  // ============================================
+  // ERROR HANDLING
+  // ============================================
+
+  showError(message) {DOM elements
     this.container = document.querySelector('.container');
     this.selectElement = document.getElementById('feed-select');
     this.timelineElement = document.getElementById('timeline');
     this.triggerElement = document.getElementById('load-more-trigger');
-    this.statusElement = document.getElementById('status-text');
     
     // State
     this.listViews = new Map();
