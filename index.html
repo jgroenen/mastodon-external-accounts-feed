@@ -288,20 +288,68 @@
             day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'
         });
 
-        // VERBETERD: Check op media attachments en gebruik de preview_url of url zonder CORS restricties te triggeren
+        // GEUPDATED: Uitgebreide media-check voor afbeeldingen én video's
         let mediaHtml = '';
         if (toot.media_attachments && toot.media_attachments.length > 0) {
-            // Pak de eerste afbeelding
-            const mediaItem = toot.media_attachments.find(m => m.type === 'image' || m.type === 'gifv');
-            if (mediaItem) {
+            const mediaItem = toot.media_attachments[0]; // Pak het eerste media-item
+            
+            if (mediaItem.type === 'image') {
+                // Normale afbeelding
                 const imgUrl = mediaItem.preview_url || mediaItem.url;
                 mediaHtml = `
                     <div class="media-attachments">
                         <img src="${imgUrl}" alt="${mediaItem.description || 'Afbeelding'}" loading="lazy" referrerpolicy="no-referrer">
                     </div>
                 `;
+            } else if (mediaItem.type === 'video' || mediaItem.type === 'gifv') {
+                // Video of bewegende GIFV (Mastodon zet gifs om naar mp4)
+                // We tonen de videospeler met de preview_url als 'poster' (thumbnail) tijdens het laden
+                const videoUrl = mediaItem.url;
+                const posterUrl = mediaItem.preview_url || '';
+                const isGifv = mediaItem.type === 'gifv';
+
+                mediaHtml = `
+                    <div class="media-attachments">
+                        <video 
+                            src="${videoUrl}" 
+                            poster="${posterUrl}" 
+                            controls 
+                            ${isGifv ? 'loop muted autoplay playsinline' : ''} 
+                            preload="none" 
+                            style="width: 100%; max-height: 400px; display: block; object-fit: cover;"
+                            referrerpolicy="no-referrer">
+                            Je browser ondersteunt deze video-tag niet.
+                        </video>
+                    </div>
+                `;
             }
         }
+
+        const instanceHost = toot.originalInstance.replace('https://', '');
+        const fullHandle = `@${toot.account.acct}@${instanceHost}`;
+
+        tootDiv.innerHTML = `
+            <div class="toot-header">
+                <img class="avatar" src="${toot.account.avatar}" alt="Avatar" referrerpolicy="no-referrer">
+                <div class="account-info">
+                    <a href="${toot.account.url}" target="_blank" class="display-name">${toot.account.display_name}</a>
+                    <span class="username">${fullHandle}</span>
+                </div>
+                <a href="${toot.url}" target="_blank" class="timestamp" title="${new Date(toot.created_at).toLocaleString()}">${tootDate}</a>
+            </div>
+            <div class="toot-content">
+                ${toot.content}
+            </div>
+            ${mediaHtml}
+            <div class="toot-actions">
+                <a href="${toot.url}" target="_blank" class="action-btn">${icons.reply} ${toot.replies_count || 0}</a>
+                <a href="${toot.url}" target="_blank" class="action-btn">${icons.boost} ${toot.reblogs_count || 0}</a>
+                <a href="${toot.url}" target="_blank" class="action-btn">${icons.favourite} ${toot.favourites_count || 0}</a>
+            </div>
+        `;
+
+        return tootDiv;
+    }
 
         const instanceHost = toot.originalInstance.replace('https://', '');
         const fullHandle = `@${toot.account.acct}@${instanceHost}`;
