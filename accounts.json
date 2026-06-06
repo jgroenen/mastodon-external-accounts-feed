@@ -9,7 +9,10 @@
         { "instance": "https://waag.social", "username": "marleenstikker" },
         { "instance": "https://waag.social", "username": "sander" },
         { "instance": "https://mastodon.social", "username": "jpagroenen" },
-        { "instance": "https://mastodon.nl", "username": "jpagroenen" }
+        { "instance": "https://mastodon.nl", "username": "jpagroenen" },
+        { "instance": "https://social.edu.nl", "username": "wlaatje" },
+        { "instance": "https://mastodon.nl", "username": "bert_hubert" },
+        { "instance": "https://mastodon.social", "username": "ilyaz" }
       ]
     },
     {
