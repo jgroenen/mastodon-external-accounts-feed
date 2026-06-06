@@ -8,6 +8,7 @@
 // ============================================
 
 const TEMPLATE_ID = 'toot-template';
+const ICON_BASE_URL = 'https://social.codefor.nl/static/icons';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -85,28 +86,14 @@ function buildMediaHtml(mediaAttachments) {
 }
 
 // ============================================
-// SVG ICONS - Cleaner, more modern design
+// ICONS - Using images from social.codefor.nl
 // ============================================
 
 function getIcon(name) {
   const icons = {
-    // Reply icon - Speech bubble with arrow (Feather style)
-    reply: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-    </svg>`,
-    
-    // Boost icon - Retweet arrows (Feather style)
-    boost: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polyline points="17 1 21 5 21 19 17 23"/>
-      <polyline points="11 1 7 5 7 19 11 23"/>
-      <polyline points="17 1 11 1 11 5 17 5"/>
-      <polyline points="7 23 7 19 11 19"/>
-    </svg>`,
-    
-    // Favorite icon - Heart (Feather style)
-    favourite: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>`
+    reply: `<img src="${ICON_BASE_URL}/reply.svg" alt="Reageren" class="action-icon" loading="lazy">`,
+    boost: `<img src="${ICON_BASE_URL}/boost.svg" alt="Delen" class="action-icon" loading="lazy">`,
+    favourite: `<img src="${ICON_BASE_URL}/favourite.svg" alt="Favoriet" class="action-icon" loading="lazy">`
   };
   return icons[name] || '';
 }
