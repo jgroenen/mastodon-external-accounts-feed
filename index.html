@@ -296,12 +296,6 @@
         }
     });
 
-    // Configuratielijst van de externe accounts
-    const targetAccounts = [
-        { instance: 'https://social.amsterdam.nl', username: 'gemeenteamsterdam' },
-        { instance: 'https://social.overheid.nl', username: 'stasdigi' }
-    ];
-
     const icons = {
         reply: `<svg viewBox="0 0 16 16"><path d="M6.5 3.5v-2L1 6.5l5.5 5v-2c3.7 0 6 2 6 2s-.7-3.5-6-4z"/></svg>`,
         boost: `<svg viewBox="0 0 16 16"><path d="M4 4.5h8v2l3-3-3-3v2H2v5h2v-3zm8 7H4v-2l-3 3 3 3v-2h10v-5h-2v3z"/></svg>`,
@@ -314,6 +308,8 @@
         let allToots = [];
 
         try {
+            const targetAccounts = await fetch('accounts.json').then(res => res.json());
+            
             for (const account of targetAccounts) {
                 const lookupUrl = `${account.instance}/api/v1/accounts/lookup?acct=${account.username}`;
                 const lookupResponse = await fetch(lookupUrl);
