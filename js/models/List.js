@@ -30,6 +30,10 @@ export class List {
     this.pendingPosts = [];
     this.isNotifying = false;
     
+    // Auto-refresh
+    this.refreshInterval = null;
+    this.isRefreshing = false;
+    
     this.initAccounts(accountRefs);
   }
 
@@ -66,6 +70,51 @@ export class List {
     
     // Log summary
     console.log(`List "${this.name}" initialized with ${this.accounts.size} accounts`);
+    
+    // Start auto-refresh (every 30 seconds)
+    this.startAutoRefresh();
+  }
+
+  // ============================================
+  // AUTO-REFRESH
+  // ============================================
+
+  startAutoRefresh(interval = 30000) {
+    // Clear any existing interval
+    this.stopAutoRefresh();
+    
+    // Set up periodic refresh
+    this.refreshInterval = setInterval(() => {
+      this.refreshAllPosts();
+    }, interval);
+  }
+
+  stopAutoRefresh() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
+  }
+
+  async refreshAllPosts() {
+    // Prevent concurrent refreshes
+    if (this.isRefreshing) return;
+    
+    this.isRefreshing = true;
+    
+    try {
+      const newPosts = await this.getNewPosts();
+      
+      if (newPosts.length > 0) {
+        // Batch and notify
+        this.pendingPosts.push(...newPosts);
+        this.scheduleNotification();
+      }
+    } catch (error) {
+      console.error(`List auto-refresh failed for ${this.slug}:`, error);
+    } finally {
+      this.isRefreshing = false;
+    }
   }
 
   async loadFromCache() {
@@ -180,6 +229,11 @@ export class List {
       
       this.saveToCache();
       console.log(`Added account ${account.id} to list "${this.name}"`);
+      
+      // Start auto-refresh if this is the first account
+      if (this.accounts.size === 1 && !this.refreshInterval) {
+        this.startAutoRefresh();
+      }
     } catch (error) {
       // Remove failed account
       this.accounts.delete(account.id);
@@ -195,6 +249,11 @@ export class List {
     account.stopAutoUpdate();
     this.accounts.delete(accountId);
     this.saveToCache();
+    
+    // If no accounts left, stop auto-refresh
+    if (this.accounts.size === 0) {
+      this.stopAutoRefresh();
+    }
   }
 
   getAccount(accountId) {

@@ -8,7 +8,6 @@
 // ============================================
 
 const TEMPLATE_ID = 'toot-template';
-const ICON_BASE_URL = 'https://social.codefor.nl/static/icons';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -86,19 +85,6 @@ function buildMediaHtml(mediaAttachments) {
 }
 
 // ============================================
-// ICONS - Using images from social.codefor.nl
-// ============================================
-
-function getIcon(name) {
-  const icons = {
-    reply: `<img src="${ICON_BASE_URL}/reply.svg" alt="Reageren" class="action-icon" loading="lazy">`,
-    boost: `<img src="${ICON_BASE_URL}/boost.svg" alt="Delen" class="action-icon" loading="lazy">`,
-    favourite: `<img src="${ICON_BASE_URL}/favourite.svg" alt="Favoriet" class="action-icon" loading="lazy">`
-  };
-  return icons[name] || '';
-}
-
-// ============================================
 // MAIN FUNCTION
 // ============================================
 
@@ -137,9 +123,6 @@ export function createTootElement(post) {
     '{fullDate}': fullDate,
     '{content}': post.content || '',
     '{mediaHtml}': mediaHtml || '',
-    '{replyIcon}': getIcon('reply'),
-    '{boostIcon}': getIcon('boost'),
-    '{favouriteIcon}': getIcon('favourite'),
     '{repliesCount}': String(post.repliesCount || 0),
     '{reblogsCount}': String(post.reblogsCount || 0),
     '{favouritesCount}': String(post.favouritesCount || 0)

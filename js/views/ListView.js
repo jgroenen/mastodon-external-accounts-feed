@@ -25,9 +25,6 @@ export class ListView {
     this.hasMore = false;
     this.observer = null;
     this.triggerElement = null;
-    this.indicatorElement = null;
-    this.indicatorCountElement = null;
-    this.pendingPosts = [];
   }
 
   // ============================================
@@ -43,34 +40,11 @@ export class ListView {
   setupContainer() {
     this.container.innerHTML = '';
     
-    // Setup new posts indicator
-    this.indicatorElement = document.getElementById('new-posts-indicator');
-    this.indicatorCountElement = document.getElementById('new-posts-count');
-    
     // Setup trigger for infinite scroll
     this.triggerElement = document.createElement('div');
     this.triggerElement.className = TRIGGER_CLASS;
     this.triggerElement.setAttribute('aria-live', 'assertive');
     this.container.appendChild(this.triggerElement);
-    
-    // Setup click handler for indicator
-    this.setupIndicatorClick();
-  }
-
-  setupIndicatorClick() {
-    if (this.indicatorElement) {
-      this.indicatorElement.addEventListener('click', () => {
-        this.loadPendingPosts();
-      });
-    }
-  }
-
-  loadPendingPosts() {
-    if (this.pendingPosts.length > 0) {
-      this.prependPosts(this.pendingPosts);
-      this.pendingPosts = [];
-      this.hideNewPostsIndicator();
-    }
   }
 
   setupObserver() {
@@ -87,23 +61,6 @@ export class ListView {
         this.handlePostsUpdated(data.posts);
       }
     });
-  }
-
-  // ============================================
-  // NEW POSTS INDICATOR
-  // ============================================
-
-  showNewPostsIndicator(count) {
-    if (this.indicatorElement && this.indicatorCountElement) {
-      this.indicatorCountElement.textContent = count;
-      this.indicatorElement.style.display = 'block';
-    }
-  }
-
-  hideNewPostsIndicator() {
-    if (this.indicatorElement) {
-      this.indicatorElement.style.display = 'none';
-    }
   }
 
   // ============================================
@@ -153,8 +110,8 @@ export class ListView {
       const firstNewPostId = newPosts[0]?.mastodonId;
       
       if (firstPostId && firstNewPostId && firstNewPostId !== firstPostId) {
-        this.pendingPosts = newPosts;
-        this.showNewPostsIndicator(newPosts.length);
+        // Auto-prepend new posts (they come sorted from List)
+        this.prependPosts(newPosts);
       }
     } else {
       this.renderTimeline(newPosts);
