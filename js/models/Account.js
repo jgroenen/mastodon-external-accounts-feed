@@ -194,11 +194,27 @@ export class Account {
   }
 
   normalizePost(toot) {
+    // Als dit een reblog is, gebruik dan de originele post
+    let url = toot.url;
+    let isReblog = false;
+    let originalPost = null;
+    
+    if (toot.reblog) {
+      isReblog = true;
+      originalPost = {
+        id: toot.reblog.id,
+        url: toot.reblog.url,
+        account: toot.reblog.account
+      };
+      // Gebruik de originele post URL
+      url = toot.reblog.url;
+    }
+    
     return {
       id: `${this.instance}:${toot.id}`,
       mastodonId: toot.id,
       instance: this.instance,
-      url: toot.url,
+      url: url,
       createdAt: toot.created_at,
       content: toot.content || '',
       contentText: stripHtml(toot.content || ''),
@@ -211,6 +227,12 @@ export class Account {
         avatar: this.avatar,
         url: this.url
       },
+      // Als het een reblog is, sla de originele post info op
+      isReblog: isReblog,
+      originalPost: originalPost,
+      // Originele instance (voor federated URLs)
+      originalInstance: toot.reblog ? new URL(toot.reblog.url).hostname : this.instance,
+      originalPostId: toot.reblog ? toot.reblog.id : toot.id,
       mediaAttachments: toot.media_attachments || [],
       repliesCount: toot.replies_count || 0,
       reblogsCount: toot.reblogs_count || 0,
