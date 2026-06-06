@@ -289,7 +289,20 @@ export class List {
       allPosts.push(...posts);
     }
     
-    return this.sortAndDeduplicate(allPosts, limit);
+    const sortedPosts = this.sortAndDeduplicate(allPosts, limit);
+    
+    // Update tracking for initial load
+    if (sortedPosts.length > 0) {
+      if (!this.highestPostId || sortedPosts[0].mastodonId > this.highestPostId) {
+        this.highestPostId = sortedPosts[0].mastodonId;
+      }
+      if (!this.lowestPostId || sortedPosts[sortedPosts.length - 1].mastodonId < this.lowestPostId) {
+        this.lowestPostId = sortedPosts[sortedPosts.length - 1].mastodonId;
+        this.saveToCache();
+      }
+    }
+    
+    return sortedPosts;
   }
 
   async getNewPosts() {
@@ -300,7 +313,17 @@ export class List {
       allPosts.push(...newPosts);
     }
     
-    return this.sortAndDeduplicate(allPosts);
+    const sortedPosts = this.sortAndDeduplicate(allPosts);
+    
+    // Update tracking for new posts
+    if (sortedPosts.length > 0) {
+      if (!this.highestPostId || sortedPosts[0].mastodonId > this.highestPostId) {
+        this.highestPostId = sortedPosts[0].mastodonId;
+      }
+      this.saveToCache();
+    }
+    
+    return sortedPosts;
   }
 
   async getOlderPosts() {
@@ -311,7 +334,18 @@ export class List {
       allPosts.push(...olderPosts);
     }
     
-    return this.sortAndDeduplicate(allPosts);
+    const sortedPosts = this.sortAndDeduplicate(allPosts);
+    
+    // Update List's tracking to the lowest of all accounts
+    if (sortedPosts.length > 0) {
+      const lowest = sortedPosts[sortedPosts.length - 1].mastodonId;
+      if (!this.lowestPostId || lowest < this.lowestPostId) {
+        this.lowestPostId = lowest;
+        this.saveToCache();
+      }
+    }
+    
+    return sortedPosts;
   }
 
   hasMorePosts() {

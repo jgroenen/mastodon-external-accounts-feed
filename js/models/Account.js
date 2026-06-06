@@ -279,12 +279,46 @@ export class Account {
 
   async getNewPosts() {
     if (!this.highestPostId) return this.getCachedPosts(20);
-    return this.fetchPosts({ limit: 20, sinceId: this.highestPostId });
+    const newPosts = await this.fetchPosts({ limit: 20, sinceId: this.highestPostId });
+    
+    // Cache the new posts
+    if (newPosts.length > 0) {
+      newPosts.forEach(post => {
+        this.posts.set(post.mastodonId, post);
+        putInDB(DB_POSTS, post);
+      });
+      
+      // Update tracking
+      this.highestPostId = newPosts[0].mastodonId;
+      if (!this.lowestPostId || newPosts[newPosts.length - 1].mastodonId < this.lowestPostId) {
+        this.lowestPostId = newPosts[newPosts.length - 1].mastodonId;
+      }
+      
+      this.lastFetched = Date.now();
+      this.saveAccountToCache();
+    }
+    
+    return newPosts;
   }
 
   async getOlderPosts() {
     if (!this.lowestPostId) return [];
-    return this.fetchPosts({ limit: 20, maxId: this.lowestPostId });
+    const olderPosts = await this.fetchPosts({ limit: 20, maxId: this.lowestPostId });
+    
+    // Cache the older posts
+    if (olderPosts.length > 0) {
+      olderPosts.forEach(post => {
+        this.posts.set(post.mastodonId, post);
+        putInDB(DB_POSTS, post);
+      });
+      
+      // Update tracking
+      this.lowestPostId = olderPosts[olderPosts.length - 1].mastodonId;
+      this.lastFetched = Date.now();
+      this.saveAccountToCache();
+    }
+    
+    return olderPosts;
   }
 
   hasMorePosts() {
