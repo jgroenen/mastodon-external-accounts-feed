@@ -40,30 +40,15 @@
         }
 
         header {
-            background-color: var(--surface-color);
             padding: 15px 20px;
-            border-radius: 4px 4px 0 0;
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 10;
-        }
-
-        .header-left {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex-grow: 1;
-            margin-right: 15px;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 700;
+            background: transparent;
         }
 
         .list-switcher {
@@ -87,6 +72,7 @@
         .status {
             font-size: 0.85rem;
             color: var(--text-muted);
+            margin-left: 10px;
         }
 
         #timeline { 
@@ -316,14 +302,11 @@
 
 <div class="container">
     <header role="banner">
-        <div class="header-left">
-            <h1>Gecureerde Overheidsfeed</h1>
-            <label for="feed-select" class="sr-only">Kies een tijdlijn lijst</label>
-            <select id="feed-select" class="list-switcher">
-                <option value="">Kies een lijst...</option>
-            </select>
-            <div class="status" id="status-text" aria-live="polite"></div>
-        </div>
+        <label for="feed-select" class="sr-only">Kies een tijdlijn lijst</label>
+        <select id="feed-select" class="list-switcher">
+            <option value="">Kies een lijst...</option>
+        </select>
+        <div class="status" id="status-text" aria-live="polite"></div>
     </header>
 
     <main id="timeline" aria-label="Federatieve Berichtenstroom"></main>
