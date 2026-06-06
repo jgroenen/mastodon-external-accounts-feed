@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gecureerde Overheidsfeed</title>
+    <title>Gecureerde Overheidsfeed - Tijdlijn</title>
     <style>
         :root {
+            /* Standaard Donkere Modus (Contrast geoptimaliseerd) */
             --bg-color: #191b22;
             --surface-color: #282c37;
             --text-color: #ffffff;
-            --text-muted: #9baec8;
-            --accent-color: #6364ff;
+            --text-muted: #a5b7d0; /* WCAG AA Compliant contrast ratio op #282c37 */
+            --accent-color: #7a7bff; /* Iets lichter voor beter contrast in darkmode */
             --border-color: #393f4f;
         }
 
         :root.light-mode {
+            /* Lichte Modus (Contrast geoptimaliseerd) */
             --bg-color: #f2f3f5;
             --surface-color: #ffffff;
             --text-color: #000000;
-            --text-muted: #5c626d;
-            --accent-color: #5c5eff;
-            --border-color: #e0e4ed;
+            --text-muted: #4a505a; /* WCAG AA Compliant contrast ratio op #ffffff */
+            --accent-color: #4445db; /* Donkerder blauw voor contrast op wit */
+            --border-color: #cbd2e1;
         }
 
         body {
             margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
@@ -64,6 +66,7 @@
             margin-top: 2px;
         }
 
+        /* Toegankelijke Knop met duidelijke focus-state */
         .theme-toggle-btn {
             background: none;
             border: 1px solid var(--border-color);
@@ -78,10 +81,16 @@
             background-color: var(--bg-color);
         }
 
+        .theme-toggle-btn:focus-visible {
+            outline: 3px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
         .theme-toggle-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
         #timeline { display: flex; flex-direction: column; }
 
+        /* Veranderd naar article voor semantiek */
         .toot {
             background-color: var(--surface-color);
             padding: 20px;
@@ -94,52 +103,73 @@
         .toot-header { display: flex; align-items: center; margin-bottom: 15px; position: relative; }
         .avatar { width: 46px; height: 46px; border-radius: 4px; margin-right: 12px; }
         .account-info { display: flex; flex-direction: column; line-height: 1.3; }
+        
         .display-name { font-weight: 700; color: var(--text-color); text-decoration: none; }
+        .display-name:hover, .display-name:focus { text-decoration: underline; outline: none; }
+        
         .username { color: var(--text-muted); font-size: 0.9rem; }
+        
         .timestamp { position: absolute; top: 0; right: 0; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; }
+        .timestamp:hover, .timestamp:focus { text-decoration: underline; }
+
         .toot-content { font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
         .toot-content p { margin: 0 0 10px 0; }
-        .toot-content a { color: var(--accent-color); text-decoration: none; }
+        .toot-content a { color: var(--accent-color); text-decoration: underline; } /* Underline verplicht voor links in tekst */
+
         .media-attachments { margin-top: 12px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
         .media-attachments img { width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover; }
         
         .toot-actions { display: flex; margin-top: 15px; color: var(--text-muted); }
-        .action-btn { display: flex; align-items: center; margin-right: 30px; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; }
+        
+        /* Toegankelijke actielinks met duidelijke focus */
+        .action-btn { 
+            display: flex; 
+            align-items: center; 
+            margin-right: 30px; 
+            font-size: 0.85rem; 
+            color: var(--text-muted); 
+            text-decoration: none; 
+        }
+        .action-btn:hover, .action-btn:focus { color: var(--accent-color); text-decoration: underline; outline: none; }
         .action-btn svg { width: 18px; height: 18px; margin-right: 5px; fill: currentColor; }
 
-        /* Infinite Scroll Indicators */
-        .loading-trigger {
-            padding: 20px;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
+        /* Visueel verborgen klasse voor screenreader ondersteuning (SR-Only) */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
         }
 
+        .loading-trigger { padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
+    <header role="banner">
         <div class="header-left">
             <h1>Gecureerde Overheidsfeed</h1>
-            <div class="status" id="status-text">Laden...</div>
+            <div class="status" id="status-text" aria-live="polite">Laden...</div>
         </div>
-        <button class="theme-toggle-btn" id="theme-btn">
-            <svg id="theme-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM7.05 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.02-.39-1.41 0z"/></svg>
+        <button class="theme-toggle-btn" id="theme-btn" aria-pressed="false">
+            <svg id="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM7.05 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.02-.39-1.41 0z"/></svg>
             <span id="theme-text">Lichte modus</span>
         </button>
     </header>
 
-    <div id="timeline"></div>
+    <main id="timeline" aria-label="Federatieve Berichtenstroom"></main>
     
-    <!-- Dit element markeert de bodem van de pagina -->
-    <div id="load-more-trigger" class="loading-trigger">Berichten laden...</div>
+    <div id="load-more-trigger" class="loading-trigger" aria-live="assertive">Berichten laden...</div>
 </div>
 
 <script>
-    // Theme toggler (onveranderd)
+    // Theme toggler met verbeterde ARIA status-updates
     const themeBtn = document.getElementById('theme-btn');
     const themeText = document.getElementById('theme-text');
     const themeIcon = document.getElementById('theme-icon');
@@ -151,34 +181,34 @@
         htmlElement.classList.add('light-mode');
         themeText.textContent = 'Donkere modus';
         themeIcon.querySelector('path').setAttribute('d', moonPath);
+        themeBtn.setAttribute('aria-pressed', 'true');
     }
+
     themeBtn.addEventListener('click', () => {
         htmlElement.classList.toggle('light-mode');
         const isLight = htmlElement.classList.contains('light-mode');
         localStorage.setItem('theme', isLight ? 'light' : 'dark');
         themeText.textContent = isLight ? 'Donkere modus' : 'Lichte modus';
         themeIcon.querySelector('path').setAttribute('d', isLight ? moonPath : sunPath);
+        themeBtn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
     });
 
     const icons = {
-        reply: `<svg viewBox="0 0 16 16"><path d="M6.5 3.5v-2L1 6.5l5.5 5v-2c3.7 0 6 2 6 2s-.7-3.5-6-4z"/></svg>`,
-        boost: `<svg viewBox="0 0 16 16"><path d="M4 4.5h8v2l3-3-3-3v2H2v5h2v-3zm8 7H4v-2l-3 3 3 3v-2h10v-5h-2v3z"/></svg>`,
-        favourite: `<svg viewBox="0 0 16 16"><path d="M8 11.5l-3.5 2.5 1-4.2-3.2-3 4.3-.4L8 2.5l1.4 3.9 4.3.4-3.2 3 1 4.2z"/></svg>`
+        reply: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 3.5v-2L1 6.5l5.5 5v-2c3.7 0 6 2 6 2s-.7-3.5-6-4z"/></svg>`,
+        boost: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4.5h8v2l3-3-3-3v2H2v5h2v-3zm8 7H4v-2l-3 3 3 3v-2h10v-5h-2v3z"/></svg>`,
+        favourite: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 11.5l-3.5 2.5 1-4.2-3.2-3 4.3-.4L8 2.5l1.4 3.9 4.3.4-3.2 3 1 4.2z"/></svg>`
     };
 
-    // --- INFINITE SCROLL STATE ENGINE ---
-    let sources = [];         // Bevat de geconfigureerde accounts met hun specifieke state
-    let postBuffer = [];      // Bewaart overgebleven gesorteerde posts voor de volgende scroll
-    let isFetching = false;   // Voorkomt dubbele triggers tijdens scrollen
-    const WINDOW_SIZE = 10;   // Aantal posts dat we per scroll-actie toevoegen
+    let sources = [];
+    let postBuffer = [];
+    let isFetching = false;
+    const WINDOW_SIZE = 10;
 
     async function initFeed() {
         const statusElement = document.getElementById('status-text');
         try {
-            // 1. Laad de accounts uit JSON
             const accounts = await fetch('accounts.json').then(res => res.json());
             
-            // 2. Bouw voor elke bron de interne staat op en zoek het Account ID op
             for (const acc of accounts) {
                 const lookupUrl = `${acc.instance}/api/v1/accounts/lookup?acct=${acc.username}`;
                 const res = await fetch(lookupUrl);
@@ -188,25 +218,25 @@
                 sources.push({
                     instance: acc.instance,
                     username: acc.username,
+                    displayName: data.display_name || acc.username,
                     id: data.id,
-                    lowestIdSeen: null, // Cursor voor paginering (max_id)
-                    hasMore: true       // Of de server leeg is
+                    lowestIdSeen: null,
+                    hasMore: true
                 });
             }
 
-            // 3. Start de Intersection Observer voor de bodem van de pagina
             const trigger = document.getElementById('load-more-trigger');
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting && !isFetching) {
                     loadNextWindow();
                 }
-            }, { rootMargin: '300px' }); // Trigger al 300px vóór de bodem voor vloeiende ervaring
+            }, { rootMargin: '400px' });
             
             observer.observe(trigger);
 
         } catch (e) {
             console.error(e);
-            document.getElementById('timeline').innerHTML = `<div class="loading-trigger" style="color:red">Initialisatiefout</div>`;
+            document.getElementById('timeline').innerHTML = `<div class="loading-trigger" style="color:red" role="alert">Initialisatiefout bij het laden van de accounts.</div>`;
             statusElement.textContent = 'Fout';
         }
     }
@@ -219,13 +249,12 @@
 
         let newBatch = [];
 
-        // Haal van ELKE actieve bron nieuwe posts op gebaseerd op hun individuele cursor
         for (const source of sources) {
             if (!source.hasMore) continue;
 
             let url = `${source.instance}/api/v1/accounts/${source.id}/statuses?limit=${WINDOW_SIZE}&exclude_reblogs=true`;
             if (source.lowestIdSeen) {
-                url += `&max_id=${source.lowestIdSeen}`; // Vraag alleen oudere posts op dan de cursor
+                url += `&max_id=${source.lowestIdSeen}`;
             }
 
             try {
@@ -233,42 +262,34 @@
                 if (!res.ok) { source.hasMore = false; continue; }
                 const toots = await res.json();
 
-                if (toots.length === 0) {
-                    source.hasMore = false;
-                    continue;
-                }
+                if (toots.length === 0) { source.hasMore = false; continue; }
 
-                // Update de cursor naar het alleroudste bericht in deze specifieke batch
                 source.lowestIdSeen = toots[toots.length - 1].id;
-
-                // Label de posts zodat we weten van welke instance ze komen
-                toots.forEach(t => t.originalInstance = source.instance);
+                toots.forEach(t => {
+                    t.originalInstance = source.instance;
+                    t.sourceAccountName = source.displayName; // Bewaar naam voor fallback alt-teksten
+                });
                 newBatch = newBatch.concat(toots);
             } catch (e) {
                 console.error(`Fout bij laden van ${source.username}:`, e);
             }
         }
 
-        // Voeg de nieuwe oogst samen met wat we eventueel nog in de buffer hadden van vorige keer
         let pool = postBuffer.concat(newBatch);
-
-        // Sorteer de hele pool streng chronologisch (nieuwste eerst)
         pool.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        // Splits de pool: pak de top X voor het scherm, bewaar de rest in de buffer
         const toDisplay = pool.slice(0, WINDOW_SIZE);
         postBuffer = pool.slice(WINDOW_SIZE);
 
-        // Render de geselecteerde posts
         toDisplay.forEach(toot => {
             timelineElement.appendChild(createTootElement(toot));
         });
 
-        // Check of we echt helemaal aan het einde zijn
         const stillHasMore = sources.some(s => s.hasMore) || postBuffer.length > 0;
         if (!stillHasMore) {
-            document.getElementById('load-more-trigger').textContent = 'Einde van de feed bereikt.';
-            document.getElementById('load-more-trigger').style.display = 'block';
+            const trigger = document.getElementById('load-more-trigger');
+            trigger.textContent = 'Einde van de feed bereikt.';
+            trigger.setAttribute('role', 'status');
         }
 
         statusElement.textContent = 'Live bijgewerkt';
@@ -276,42 +297,60 @@
     }
 
     function createTootElement(toot) {
-        const tootDiv = document.createElement('div');
-        tootDiv.className = 'toot';
+        // GEBRUIK VAN SEMANTISCHE <article> TAG
+        const tootArticle = document.createElement('article');
+        tootArticle.className = 'toot';
+        // Geef screenreaders een duidelijke context over welk bericht ze lezen
+        tootArticle.setAttribute('aria-label', `Bericht van ${toot.account.display_name}`);
 
         const tootDate = new Date(toot.created_at).toLocaleDateString('nl-NL', {
             day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'
         });
 
+        // TOEGANKELIJKE MEDIA AFHANDELING
         let mediaHtml = '';
         if (toot.media_attachments && toot.media_attachments.length > 0) {
             const mediaItem = toot.media_attachments[0];
+            // Als er geen alt-tekst is ingevuld door de redacteur, maak een betekenisvolle fallback
+            const altText = mediaItem.description || `Afbeelding bij het bericht van ${toot.sourceAccountName}`;
+            
             if (mediaItem.type === 'image') {
-                mediaHtml = `<div class="media-attachments"><img src="${mediaItem.preview_url || mediaItem.url}" alt="${mediaItem.description || ''}" loading="lazy" referrerpolicy="no-referrer"></div>`;
+                mediaHtml = `<div class="media-attachments"><img src="${mediaItem.preview_url || mediaItem.url}" alt="${altText}" loading="lazy" referrerpolicy="no-referrer"></div>`;
             } else if (mediaItem.type === 'video' || mediaItem.type === 'gifv') {
-                mediaHtml = `<div class="media-attachments"><video src="${mediaItem.url}" poster="${mediaItem.preview_url || ''}" controls ${mediaItem.type === 'gifv' ? 'loop muted autoplay playsinline' : ''} preload="none" style="width: 100%; max-height: 400px; display: block; object-fit: cover;" referrerpolicy="no-referrer"></video></div>`;
+                mediaHtml = `<div class="media-attachments"><video src="${mediaItem.url}" poster="${mediaItem.preview_url || ''}" controls ${mediaItem.type === 'gifv' ? 'loop muted autoplay playsinline' : ''} preload="none" style="width: 100%; max-height: 400px; display: block; object-fit: cover;" referrerpolicy="no-referrer" aria-label="Video: ${altText}"></video></div>`;
             }
         }
 
         const instanceHost = toot.originalInstance.replace('https://', '');
-        tootDiv.innerHTML = `
+        
+        // REPLIES, BOOSTS & FAVOURITES TOEGANKELIJK MAKEN VIA SR-ONLY KLASSE
+        tootArticle.innerHTML = `
             <div class="toot-header">
                 <img class="avatar" src="${toot.account.avatar}" alt="" referrerpolicy="no-referrer">
                 <div class="account-info">
                     <a href="${toot.account.url}" target="_blank" class="display-name">${toot.account.display_name}</a>
-                    <span class="username">@${toot.account.acct}@${instanceHost}</span>
+                    <span class="username" aria-hidden="true">@${toot.account.acct}@${instanceHost}</span>
                 </div>
-                <a href="${toot.url}" target="_blank" class="timestamp">${tootDate}</a>
+                <a href="${toot.url}" target="_blank" class="timestamp" aria-label="Gepubliceerd op ${new Date(toot.created_at).toLocaleString()}">${tootDate}</a>
             </div>
             <div class="toot-content">${toot.content}</div>
             ${mediaHtml}
             <div class="toot-actions">
-                <a href="${toot.url}" target="_blank" class="action-btn">${icons.reply} ${toot.replies_count || 0}</a>
-                <a href="${toot.url}" target="_blank" class="action-btn">${icons.boost} ${toot.reblogs_count || 0}</a>
-                <a href="${toot.url}" target="_blank" class="action-btn">${icons.favourite} ${toot.favourites_count || 0}</a>
+                <a href="${toot.url}" target="_blank" class="action-btn">
+                    ${icons.reply} ${toot.replies_count || 0}
+                    <span class="sr-only">reacties. Klik om te antwoorden op de originele server.</span>
+                </a>
+                <a href="${toot.url}" target="_blank" class="action-btn">
+                    ${icons.boost} ${toot.reblogs_count || 0}
+                    <span class="sr-only">boosts. Klik om dit bericht te delen vanaf je eigen server.</span>
+                </a>
+                <a href="${toot.url}" target="_blank" class="action-btn">
+                    ${icons.favourite} ${toot.favourites_count || 0}
+                    <span class="sr-only">favorieten. Klik om dit bericht te bewaren.</span>
+                </a>
             </div>
         `;
-        return tootDiv;
+        return tootArticle;
     }
 
     window.addEventListener('DOMContentLoaded', initFeed);
