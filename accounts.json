@@ -28,6 +28,7 @@
       "name": "Politici",
       "slug": "politici",
       "accounts": [
+        { "instance": "https://mastodon.social", "username": "LisaWesterveld" }
       ]
     }
   ]
