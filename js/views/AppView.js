@@ -7,20 +7,7 @@ import { ListView } from './ListView.js';
 
 export class AppView {
   constructor() {
-    // STATUS
-  // ============================================
-
-  setStatus(text) {
-    this.statusElement.textContent = text;
-  }
-
-  showError(message) {
-=======
-  // ============================================
-  // ERROR HANDLING
-  // ============================================
-
-  showError(message) {DOM elements
+    // DOM elements
     this.container = document.querySelector('.container');
     this.selectElement = document.getElementById('feed-select');
     this.timelineElement = document.getElementById('timeline');
@@ -81,12 +68,8 @@ export class AppView {
   }
 
   // ============================================
-  // STATUS
+  // ERROR HANDLING
   // ============================================
-
-  setStatus(text) {
-    this.statusElement.textContent = text;
-  }
 
   showError(message) {
     this.timelineElement.innerHTML = `
