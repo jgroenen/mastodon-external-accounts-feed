@@ -108,32 +108,46 @@ function handleFormSubmit(event) {
   
   // Bouw de post URL voor de gebruikers instance
   // Mastodon format: https://user-instance/@user@original-instance/post-id
-  // De post-id in de URL is de Mastodon ID (numeric)
+  // De post-id is de LAATSTE numerieke ID in de URL
   try {
     const url = new URL(currentPostUrl);
     const pathParts = url.pathname.split('/').filter(p => p);
     
-    // Zoek de gebruiker (start met @) en post ID (is een numeriek ID)
+    // Zoek de gebruiker (start met @)
     let username = '';
     let postId = '';
     
+    // Loop door path parts van voren naar achteren
     for (let i = 0; i < pathParts.length; i++) {
       const part = pathParts[i];
       if (part.startsWith('@')) {
+        // Dit is de username
         username = part.substring(1); // Verwijder de @
-      } else if (/^\d+$/.test(part)) {
+      }
+    }
+    
+    // Zoek de post ID: dit is de LAATSTE numerieke string in de path
+    // Mastodon IDs zijn altijd numeriek
+    for (let i = pathParts.length - 1; i >= 0; i--) {
+      const part = pathParts[i];
+      if (/^\d+$/.test(part)) {
         postId = part;
+        break; // Neem de laatste numerieke ID
       }
     }
     
     // Als we geen username vonden, probeer dan uit de URL te halen
     if (!username) {
-      // Probeer username@instance format
+      // Probeer username uit @mention in de URL
       const atMatch = currentPostUrl.match(/@([^\/\?#]+)/);
       if (atMatch) {
-        username = atMatch[1].split('@')[0]; // Neem alleen het username deel
+        // Neem alleen het username deel (voor de eerste @)
+        username = atMatch[1].split('@')[0];
       }
     }
+    
+    // Debug log
+    console.log(`Parsed: username=${username}, postId=${postId}, original=${currentPostUrl}`);
     
     // Bouw de nieuwe URL
     if (username && postId) {
@@ -141,9 +155,11 @@ function handleFormSubmit(event) {
       // Format: @username@original-host
       const federatedUsername = `@${username}@${originalHost}`;
       const newUrl = `${normalizedInstance}/${federatedUsername}/${postId}`;
+      console.log(`Opening: ${newUrl}`);
       window.open(newUrl, '_blank');
     } else {
       // Fallback: open gewoon de originele post
+      console.log('Fallback to original post URL');
       window.open(currentPostUrl, '_blank');
     }
     
