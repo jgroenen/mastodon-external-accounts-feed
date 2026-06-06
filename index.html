@@ -3,169 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gecureerde Overheidsfeed - Dashboard</title>
+    <title>Gecureerde Overheidsfeed - NL Design System</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/@nl-design-system/theme-rijksoverheid/dist/index.css">
+
+    <script type="module" src="https://unpkg.com/@nl-design-system/components/dist/components.js"></script>
+
     <style>
-        :root {
-            --bg-color: #191b22;
-            --surface-color: #282c37;
-            --text-color: #ffffff;
-            --text-muted: #a5b7d0;
-            --accent-color: #7a7bff;
-            --border-color: #393f4f;
-        }
-
-        :root.light-mode {
-            --bg-color: #f2f3f5;
-            --surface-color: #ffffff;
-            --text-color: #000000;
-            --text-muted: #4a505a;
-            --accent-color: #4445db;
-            --border-color: #cbd2e1;
-        }
-
+        /* Aanvullende lay-out structuur met NLDS Design Tokens */
         body {
             margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: var(--nl-font-family-base, system-ui, sans-serif);
+            background-color: var(--nl-color-background-page, #f3f6f8);
+            color: var(--nl-color-text-default, #111111);
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 0 0 40px 0;
             transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
         }
 
-        header {
-            background-color: var(--surface-color);
-            padding: 15px 20px;
-            border-radius: 4px 4px 0 0;
-            border-bottom: 1px solid var(--border-color);
+        /* Positionering binnen het NLDS Header component */
+        .header-actions {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            gap: 16px;
         }
 
-        .header-left {
+        #timeline {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            flex-grow: 1;
-            margin-right: 15px;
+            gap: 16px; /* Officiële NLDS spatiëring tussen kaarten */
+            margin-top: 24px;
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 700;
+        /* Media styling binnen de officiële NLDS kaarten */
+        .nl-card-media {
+            margin-top: 16px;
+            border-radius: var(--nl-border-radius-medium, 4px);
+            overflow: hidden;
+            border: 1px solid var(--nl-color-border-default);
         }
-
-        /* Toegankelijke Styling voor de Dropdown Switcher */
-        .list-switcher {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            cursor: pointer;
+        .nl-card-media img, .nl-card-media video {
             width: 100%;
-            max-width: 250px;
+            height: auto;
+            display: block;
+            max-height: 400px;
+            object-fit: cover;
         }
 
-        .list-switcher:focus-visible {
-            outline: 3px solid var(--accent-color);
-            outline-offset: 2px;
+        .loading-trigger {
+            padding: 40px 20px;
+            text-align: center;
         }
 
-        .status {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+        /* Visueel verborgen voor WCAG screenreader ondersteuning */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
         }
-
-        /* Compacte Theme Knop (Alleen Icoon) */
-        .theme-toggle-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: var(--bg-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .theme-toggle-btn:focus-visible {
-            outline: 3px solid var(--accent-color);
-            outline-offset: 2px;
-        }
-
-        .theme-toggle-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
-        #timeline { display: flex; flex-direction: column; }
-
-        .toot {
-            background-color: var(--surface-color);
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .toot:last-of-type { border-radius: 0 0 4px 4px; }
-        .toot-header { display: flex; align-items: center; margin-bottom: 15px; position: relative; }
-        .avatar { width: 46px; height: 46px; border-radius: 4px; margin-right: 12px; }
-        .account-info { display: flex; flex-direction: column; line-height: 1.3; }
-        .display-name { font-weight: 700; color: var(--text-color); text-decoration: none; }
-        .display-name:hover, .display-name:focus { text-decoration: underline; outline: none; }
-        .username { color: var(--text-muted); font-size: 0.9rem; }
-        .timestamp { position: absolute; top: 0; right: 0; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; }
-        .timestamp:hover, .timestamp:focus { text-decoration: underline; }
-        .toot-content { font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
-        .toot-content p { margin: 0 0 10px 0; }
-        .toot-content a { color: var(--accent-color); text-decoration: underline; }
-        .media-attachments { margin-top: 12px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
-        .media-attachments img { width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover; }
-        .toot-actions { display: flex; margin-top: 15px; color: var(--text-muted); }
-        .action-btn { display: flex; align-items: center; margin-right: 30px; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; }
-        .action-btn:hover, .action-btn:focus { color: var(--accent-color); text-decoration: underline; outline: none; }
-        .action-btn svg { width: 18px; height: 18px; margin-right: 5px; fill: currentColor; }
-
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-        .loading-trigger { padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header role="banner">
-        <div class="header-left">
-            <h1>Gecureerde Overheidsfeed</h1>
-            <label for="feed-select" class="sr-only">Kies een tijdlijn lijst</label>
-            <select id="feed-select" class="list-switcher">
-                <option value="">Lijsten laden...</option>
-            </select>
-            <div class="status" id="status-text" aria-live="polite">Initialiseren...</div>
+    <nl-header branding="rijksoverheid" role="banner">
+        <div slot="logo">
+            <h1 style="font-size: 1.25rem; margin: 0; font-weight: var(--nl-font-weight-bold, 700);">Gecureerde Overheidsfeed</h1>
         </div>
         
-        <button class="theme-toggle-btn" id="theme-btn" aria-pressed="false">
-            <svg id="theme-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM7.05 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.02-.39-1.41 0z"/></svg>
-            <span id="theme-text" class="sr-only">Wissel naar lichte modus</span>
-        </button>
-    </header>
+        <div slot="actions" class="header-actions">
+            <nl-select id="feed-select" label="Kies lijst" hide-label style="min-width: 180px;">
+                <option value="">Lijsten laden...</option>
+            </nl-select>
+
+            <nl-button id="theme-btn" variant="subtle" aria-pressed="false" icon-only>
+                <svg id="theme-icon" slot="icon" viewBox="0 0 24 24" width="20" height="20"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM7.05 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.02-.39-1.41 0z"/></svg>
+                <span id="theme-text" class="sr-only">Wissel naar lichte modus</span>
+            </nl-button>
+        </div>
+    </nl-header>
 
     <main id="timeline" aria-label="Federatieve Berichtenstroom"></main>
-    <div id="load-more-trigger" class="loading-trigger" aria-live="assertive">Berichten laden...</div>
+    
+    <div id="load-more-trigger" class="loading-trigger">
+        <nl-progress-indicator id="status-text" active>Initialiseren...</nl-progress-indicator>
+    </div>
 </div>
 
 <script>
@@ -193,15 +126,15 @@
     });
 
     const icons = {
-        reply: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 3.5v-2L1 6.5l5.5 5v-2c3.7 0 6 2 6 2s-.7-3.5-6-4z"/></svg>`,
-        boost: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4.5h8v2l3-3-3-3v2H2v5h2v-3zm8 7H4v-2l-3 3 3 3v-2h10v-5h-2v3z"/></svg>`,
-        favourite: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 11.5l-3.5 2.5 1-4.2-3.2-3 4.3-.4L8 2.5l1.4 3.9 4.3.4-3.2 3 1 4.2z"/></svg>`
+        reply: `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6.5 3.5v-2L1 6.5l5.5 5v-2c3.7 0 6 2 6 2s-.7-3.5-6-4z" fill="currentColor"/></svg>`,
+        boost: `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4 4.5h8v2l3-3-3-3v2H2v5h2v-3zm8 7H4v-2l-3 3 3 3v-2h10v-5h-2v3z" fill="currentColor"/></svg>`,
+        favourite: `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 11.5l-3.5 2.5 1-4.2-3.2-3 4.3-.4L8 2.5l1.4 3.9 4.3.4-3.2 3 1 4.2z" fill="currentColor"/></svg>`
     };
 
-    // --- DASHBOARD ENGINE STATE ---
-    let globalData = null;    // Bevat de complete ingeladen JSON-structuur
-    let sources = [];         // De actieve accounts voor de geselecteerde lijst
-    let postBuffer = [];      // Restanten buffer voor chronologische paginering
+    // --- DASHBOARD CORE ENGINE ---
+    let globalData = null;
+    let sources = [];
+    let postBuffer = [];
     let isFetching = false;
     const WINDOW_SIZE = 10;
     let bottomObserver = null;
@@ -211,10 +144,8 @@
         const statusElement = document.getElementById('status-text');
 
         try {
-            // 1. Laad het groepenbestand
             globalData = await fetch('accounts.json').then(res => res.json());
             
-            // 2. Bouw de dropdown opties op
             selectElement.innerHTML = '';
             globalData.lists.forEach(list => {
                 const opt = document.createElement('option');
@@ -223,11 +154,9 @@
                 selectElement.appendChild(opt);
             });
 
-            // 3. Check de URL-parameter (?list=...)
             const urlParams = new URLSearchParams(window.location.search);
             let activeSlug = urlParams.get('list');
 
-            // Fallback: pak de eerste lijst als de parameter ontbreekt of foutief is
             const validSlugExists = globalData.lists.some(l => l.slug === activeSlug);
             if (!activeSlug || !validSlugExists) {
                 activeSlug = globalData.lists[0].slug;
@@ -235,15 +164,12 @@
 
             selectElement.value = activeSlug;
 
-            // 4. Luister naar handmatige wisselingen in de dropdown
             selectElement.addEventListener('change', (e) => {
                 switchList(e.target.value);
             });
 
-            // 5. Activeer de gekozen lijst
             await activateList(activeSlug);
 
-            // 6. Start de Infinite Scroll Intersection Observer
             const trigger = document.getElementById('load-more-trigger');
             bottomObserver = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting && !isFetching && sources.some(s => s.hasMore)) {
@@ -255,12 +181,12 @@
 
         } catch (e) {
             console.error(e);
-            document.getElementById('timeline').innerHTML = `<div class="loading-trigger" style="color:red" role="alert">Fout bij initialiseren van dashboard. Check accounts.json.</div>`;
-            statusElement.textContent = 'Fout';
+            document.getElementById('timeline').innerHTML = `<div class="loading-trigger" style="color:red" role="alert">Fout bij initialiseren van NLDS dashboard. Check accounts.json.</div>`;
+            statusElement.textContent = 'Fout bij laden.';
+            statusElement.removeAttribute('active');
         }
     }
 
-    // Wisselt de lijst en update de URL-parameter op een nette manier zonder te refreshen
     function switchList(slug) {
         const newUrl = `${window.location.pathname}?list=${slug}`;
         window.history.pushState({ path: newUrl }, '', newUrl);
@@ -269,21 +195,18 @@
 
     async function activateList(slug) {
         const timelineElement = document.getElementById('timeline');
-        const trigger = document.getElementById('load-more-trigger');
+        const statusElement = document.getElementById('status-text');
         
-        // Reset de tijdlijn en state counters
         timelineElement.innerHTML = '';
-        trigger.textContent = 'Berichten laden...';
+        statusElement.textContent = 'Accounts verifiëren...';
+        statusElement.setAttribute('active', '');
+        
         postBuffer = [];
         sources = [];
         isFetching = true;
 
-        document.getElementById('status-text').textContent = 'Accounts verifiëren...';
-
-        // Zoek de geselecteerde lijst op in onze JSON data
         const listConfig = globalData.lists.find(l => l.slug === slug);
         
-        // Haal live de ID's op van de accounts in deze specifieke lijst
         for (const acc of listConfig.accounts) {
             try {
                 const lookupUrl = `${acc.instance}/api/v1/accounts/lookup?acct=${acc.username}`;
@@ -306,12 +229,12 @@
 
         isFetching = false;
         
-        // Direct de eerste set posts inladen voor deze lijst
         if (sources.length > 0) {
             await loadNextWindow();
         } else {
-            timelineElement.innerHTML = `<div class="loading-trigger">Geen actieve accounts gevonden in deze lijst.</div>`;
-            document.getElementById('status-text').textContent = 'Lege lijst';
+            timelineElement.innerHTML = `<div class="loading-trigger">Geen actieve overheidsaccounts gevonden in deze lijst.</div>`;
+            statusElement.textContent = 'Lijst is leeg';
+            statusElement.removeAttribute('active');
         }
     }
 
@@ -321,7 +244,8 @@
         
         const timelineElement = document.getElementById('timeline');
         const statusElement = document.getElementById('status-text');
-        statusElement.textContent = 'Laden...';
+        statusElement.textContent = 'Nieuwe berichten sorteren...';
+        statusElement.setAttribute('active', '');
 
         let newBatch = [];
 
@@ -362,22 +286,22 @@
         });
 
         const stillHasMore = sources.some(s => s.hasMore) || postBuffer.length > 0;
-        const trigger = document.getElementById('load-more-trigger');
         if (!stillHasMore) {
-            trigger.textContent = 'Einde van deze lijst bereikt.';
-            trigger.setAttribute('role', 'status');
+            statusElement.textContent = 'Einde van deze lijst bereikt.';
+            statusElement.removeAttribute('active');
         } else {
-            trigger.textContent = 'Scroll naar beneden voor meer...';
+            statusElement.textContent = 'Scroll voor meer berichten...';
+            statusElement.removeAttribute('active');
         }
 
-        statusElement.textContent = 'Live bijgewerkt';
         isFetching = false;
     }
 
+    // --- RENDEREN MET NLDS COMPONENTEN ---
     function createTootElement(toot) {
-        const tootArticle = document.createElement('article');
-        tootArticle.className = 'toot';
-        tootArticle.setAttribute('aria-label', `Bericht van ${toot.account.display_name}`);
+        // We maken een officieel NLDS Card component aan
+        const card = document.createElement('nl-card');
+        card.setAttribute('aria-label', `Bericht van ${toot.account.display_name}`);
 
         const tootDate = new Date(toot.created_at).toLocaleDateString('nl-NL', {
             day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'
@@ -389,41 +313,56 @@
             const altText = mediaItem.description || `Afbeelding bij het bericht van ${toot.sourceAccountName}`;
             
             if (mediaItem.type === 'image') {
-                mediaHtml = `<div class="media-attachments"><img src="${mediaItem.preview_url || mediaItem.url}" alt="${altText}" loading="lazy" referrerpolicy="no-referrer"></div>`;
+                mediaHtml = `<div class="nl-card-media"><img src="${mediaItem.preview_url || mediaItem.url}" alt="${altText}" loading="lazy" referrerpolicy="no-referrer"></div>`;
             } else if (mediaItem.type === 'video' || mediaItem.type === 'gifv') {
-                mediaHtml = `<div class="media-attachments"><video src="${mediaItem.url}" poster="${mediaItem.preview_url || ''}" controls ${mediaItem.type === 'gifv' ? 'loop muted autoplay playsinline' : ''} preload="none" style="width: 100%; max-height: 400px; display: block; object-fit: cover;" referrerpolicy="no-referrer" aria-label="Video: ${altText}"></video></div>`;
+                mediaHtml = `<div class="nl-card-media"><video src="${mediaItem.url}" poster="${mediaItem.preview_url || ''}" controls ${mediaItem.type === 'gifv' ? 'loop muted autoplay playsinline' : ''} preload="none" referrerpolicy="no-referrer" aria-label="Video: ${altText}"></video></div>`;
             }
         }
 
         const instanceHost = toot.originalInstance.replace('https://', '');
         
-        tootArticle.innerHTML = `
-            <div class="toot-header">
-                <img class="avatar" src="${toot.account.avatar}" alt="" referrerpolicy="no-referrer">
-                <div class="account-info">
-                    <a href="${toot.account.url}" target="_blank" class="display-name">${toot.account.display_name}</a>
-                    <span class="username" aria-hidden="true">@${toot.account.acct}@${instanceHost}</span>
+        // We vullen hier de officiële slots ('header', 'content', 'footer') van <nl-card>
+        card.innerHTML = `
+            <div slot="header" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center;">
+                    <img src="${toot.account.avatar}" alt="" referrerpolicy="no-referrer" style="width: 44px; height: 44px; border-radius: var(--nl-border-radius-small, 2px); margin-right: 12px; border: 1px solid var(--nl-color-border-default);">
+                    <div style="display: flex; flex-direction: column; line-height: 1.3;">
+                        <a href="${toot.account.url}" target="_blank" style="font-weight: var(--nl-font-weight-bold, 700); color: var(--nl-color-text-default); text-decoration: none;">${toot.account.display_name}</a>
+                        <span style="color: var(--nl-color-text-muted); font-size: 0.85rem;">@${toot.account.acct}@${instanceHost}</span>
+                    </div>
                 </div>
-                <a href="${toot.url}" target="_blank" class="timestamp" aria-label="Gepubliceerd op ${new Date(toot.created_at).toLocaleString()}">${tootDate}</a>
+                <a href="${toot.url}" target="_blank" style="font-size: 0.85rem; color: var(--nl-color-text-muted); text-decoration: none;" aria-label="Gepubliceerd op ${new Date(toot.created_at).toLocaleString()}">${tootDate}</a>
             </div>
-            <div class="toot-content">${toot.content}</div>
-            ${mediaHtml}
-            <div class="toot-actions">
-                <a href="${toot.url}" target="_blank" class="action-btn">
-                    ${icons.reply} ${toot.replies_count || 0}
-                    <span class="sr-only">reacties. Reageer op de originele server.</span>
-                </a>
-                <a href="${toot.url}" target="_blank" class="action-btn">
-                    ${icons.boost} ${toot.reblogs_count || 0}
-                    <span class="sr-only">boosts. Deel vanaf je eigen server.</span>
-                </a>
-                <a href="${toot.url}" target="_blank" class="action-btn">
-                    ${icons.favourite} ${toot.favourites_count || 0}
-                    <span class="sr-only">favorieten. Bewaar dit bericht.</span>
-                </a>
+            
+            <div slot="content" style="font-size: var(--nl-font-size-body, 1rem); line-height: var(--nl-line-height-body, 1.5); color: var(--nl-color-text-default);">
+                <div class="toot-text-wrapper">${toot.content}</div>
+                ${mediaHtml}
+            </div>
+            
+            <div slot="footer" style="display: flex; gap: 24px;">
+                <nl-button variant="subtle" href="${toot.url}" target="_blank" size="small">
+                    ${icons.reply} <span style="margin-left: 6px;">${toot.replies_count || 0}</span>
+                    <span class="sr-only">reacties. Klik om te antwoorden via de bron.</span>
+                </nl-button>
+                <nl-button variant="subtle" href="${toot.url}" target="_blank" size="small">
+                    ${icons.boost} <span style="margin-left: 6px;">${toot.reblogs_count || 0}</span>
+                    <span class="sr-only">boosts. Klik om dit te delen via de bron.</span>
+                </nl-button>
+                <nl-button variant="subtle" href="${toot.url}" target="_blank" size="small">
+                    ${icons.favourite} <span style="margin-left: 6px;">${toot.favourites_count || 0}</span>
+                    <span class="sr-only">favorieten. Klik om te bewaren via de bron.</span>
+                </nl-button>
             </div>
         `;
-        return tootArticle;
+
+        // Mastodon spuugt al HTML p-tags uit, we zorgen dat linkjes binnen de tekst de NLDS accentkleur pakken
+        const links = card.querySelectorAll('.toot-text-wrapper a');
+        links.forEach(l => {
+            l.style.color = 'var(--nl-color-text-link)';
+            l.style.textDecoration = 'underline';
+        });
+
+        return card;
     }
 
     window.addEventListener('DOMContentLoaded', initDashboard);
