@@ -1,4 +1,19 @@
-[
-  { "instance": "https://social.amsterdam.nl", "username": "gemeenteamsterdam" },
-  { "instance": "https://social.overheid.nl", "username": "stasdigi" }
-]
+{
+  "lists": [
+    {
+      "name": "Rijksoverheid",
+      "slug": "rijksoverheid",
+      "accounts": [
+        { "instance": "https://social.overheid.nl", "username": "stasdigi" }
+      ]
+    },
+    {
+      "name": "Lokale Overheid",
+      "slug": "lokaal",
+      "accounts": [
+        { "instance": "https://social.overheid.nl", "username": "stasdigi" },
+        { "instance": "https://social.amsterdam.nl", "username": "gemeenteamsterdam" }
+      ]
+    }
+  ]
+}
