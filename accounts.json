@@ -21,8 +21,13 @@
       "name": "Lokale Overheid",
       "slug": "lokaal",
       "accounts": [
-        { "instance": "https://social.overheid.nl", "username": "stasdigi" },
         { "instance": "https://social.amsterdam.nl", "username": "gemeenteamsterdam" }
+      ]
+    },
+    {
+      "name": "Politici",
+      "slug": "politici",
+      "accounts": [
       ]
     }
   ]
