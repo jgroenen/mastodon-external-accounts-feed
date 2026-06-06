@@ -198,16 +198,40 @@ export class Account {
     let url = toot.url;
     let isReblog = false;
     let originalPost = null;
+    let activityPubUri = toot.uri || toot.url;
     
     if (toot.reblog) {
       isReblog = true;
       originalPost = {
         id: toot.reblog.id,
         url: toot.reblog.url,
+        uri: toot.reblog.uri || toot.reblog.url,
         account: toot.reblog.account
       };
-      // Gebruik de originele post URL
+      // Gebruik de originele post URL en URI
       url = toot.reblog.url;
+      activityPubUri = toot.reblog.uri || toot.reblog.url;
+    }
+    
+    // Extract username en instance uit de ActivityPub URI of URL
+    let originalUsername = '';
+    let originalInstanceHost = '';
+    
+    try {
+      const uriUrl = new URL(activityPubUri);
+      originalInstanceHost = uriUrl.hostname;
+      
+      // Probeer username uit de path te halen
+      // ActivityPub format: /users/username/statuses/post-id
+      const pathParts = uriUrl.pathname.split('/').filter(p => p);
+      const usersIndex = pathParts.findIndex(p => p === 'users');
+      if (usersIndex !== -1 && pathParts[usersIndex + 1]) {
+        originalUsername = pathParts[usersIndex + 1];
+      }
+    } catch (e) {
+      // Fallback: gebruik info uit toot.account
+      originalUsername = toot.account?.username || '';
+      originalInstanceHost = toot.account?.url ? new URL(toot.account.url).hostname : this.instance;
     }
     
     return {
@@ -215,6 +239,7 @@ export class Account {
       mastodonId: toot.id,
       instance: this.instance,
       url: url,
+      activityPubUri: activityPubUri,
       createdAt: toot.created_at,
       content: toot.content || '',
       contentText: stripHtml(toot.content || ''),
@@ -230,8 +255,9 @@ export class Account {
       // Als het een reblog is, sla de originele post info op
       isReblog: isReblog,
       originalPost: originalPost,
-      // Originele instance (voor federated URLs)
-      originalInstance: toot.reblog ? new URL(toot.reblog.url).hostname : this.instance,
+      // Originele instance en username voor federated URLs
+      originalInstance: originalInstanceHost,
+      originalUsername: originalUsername,
       originalPostId: toot.reblog ? toot.reblog.id : toot.id,
       mediaAttachments: toot.media_attachments || [],
       repliesCount: toot.replies_count || 0,

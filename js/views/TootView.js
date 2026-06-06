@@ -132,6 +132,12 @@ export function createTootElement(post) {
   const boostIcon = getIconName('boost', post.reblogsCount);
   const favouriteIcon = getIconName('favourite', post.favouritesCount);
   
+  // Get original post info for modal
+  const originalUsername = post.originalUsername || '';
+  const originalInstance = post.originalInstance || '';
+  const originalPostId = post.originalPostId || post.mastodonId || '';
+  const activityPubUri = post.activityPubUri || post.url || '';
+  
   // Replace placeholders with safe defaults
   const replacements = {
     '{mastodonId}': post.mastodonId || '',
@@ -150,7 +156,11 @@ export function createTootElement(post) {
     '{favouriteIcon}': favouriteIcon,
     '{repliesCount}': String(post.repliesCount || 0),
     '{reblogsCount}': String(post.reblogsCount || 0),
-    '{favouritesCount}': String(post.favouritesCount || 0)
+    '{favouritesCount}': String(post.favouritesCount || 0),
+    '{originalUsername}': escapeHtml(originalUsername),
+    '{originalInstance}': escapeHtml(originalInstance),
+    '{originalPostId}': originalPostId,
+    '{activityPubUri}': escapeHtml(activityPubUri)
   };
   
   // Replace all placeholders in the HTML

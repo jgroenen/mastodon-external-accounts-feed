@@ -106,10 +106,60 @@ function handleFormSubmit(event) {
     normalizedInstance = 'https://' + normalizedInstance;
   }
   
-  // Als de post URL al een @user@instance format heeft, gebruik die direct
-  // Dit is de beste manier om de originele post te openen
+  // Probeer de originele post data van de button te krijgen
+  const activeBtn = document.querySelector('.open-post-btn[data-post-url]');
+  let originalUsername = '';
+  let originalInstance = '';
+  let originalPostId = '';
+  let activityPubUri = '';
+  
+  if (activeBtn) {
+    originalUsername = activeBtn.dataset.originalUsername || '';
+    originalInstance = activeBtn.dataset.originalInstance || '';
+    originalPostId = activeBtn.dataset.originalPostId || '';
+    activityPubUri = activeBtn.dataset.activityPubUri || '';
+  }
+  
+  // Probeer 1: Gebruik ActivityPub URI als die beschikbaar is
+  if (activityPubUri) {
+    // ActivityPub URI format: https://waag.social/users/sander/statuses/116703564687908173
+    // We willen: https://user-instance/@sander@waag.social/116703564687908173
+    try {
+      const activityPubUrl = new URL(activityPubUri);
+      const pathParts = activityPubUrl.pathname.split('/').filter(p => p);
+      
+      // Extract username from /users/username/statuses/id
+      const usersIndex = pathParts.findIndex(p => p === 'users');
+      if (usersIndex !== -1 && pathParts[usersIndex + 1]) {
+        originalUsername = pathParts[usersIndex + 1];
+      }
+      
+      // Extract post ID (laatste numerieke in path)
+      for (let i = pathParts.length - 1; i >= 0; i--) {
+        if (/^\d+$/.test(pathParts[i])) {
+          originalPostId = pathParts[i];
+          break;
+        }
+      }
+      
+      originalInstance = activityPubUrl.hostname;
+    } catch (e) {
+      console.warn('Failed to parse ActivityPub URI:', activityPubUri, e);
+    }
+  }
+  
+  // Probeer 2: Als we originalUsername, originalInstance en originalPostId hebben
+  if (originalUsername && originalInstance && originalPostId) {
+    const federatedUsername = `@${originalUsername}@${originalInstance}`;
+    const newUrl = `${normalizedInstance}/${federatedUsername}/${originalPostId}`;
+    console.log(`Opening with original data: ${newUrl}`);
+    window.open(newUrl, '_blank');
+    closePostModal();
+    return;
+  }
+  
+  // Probeer 3: Parse uit de currentPostUrl
   try {
-    // Check of de URL al een federated user heeft
     const url = new URL(currentPostUrl);
     const pathParts = url.pathname.split('/').filter(p => p);
     
@@ -121,7 +171,6 @@ function handleFormSubmit(event) {
       const federatedUser = federatedUserMatch[0]; // @user@original-instance
       const postId = pathParts[pathParts.length - 1]; // Laatste deel is de post ID
       
-      // Bouw nieuwe URL: user-instance/@user@original-instance/post-id
       const newUrl = `${normalizedInstance}/${federatedUser}/${postId}`;
       console.log(`Opening federated: ${newUrl}`);
       window.open(newUrl, '_blank');
@@ -131,15 +180,13 @@ function handleFormSubmit(event) {
       let postId = '';
       let originalHost = url.hostname;
       
-      // Loop door path parts van voren naar achteren
       for (let i = 0; i < pathParts.length; i++) {
         const part = pathParts[i];
         if (part.startsWith('@')) {
-          username = part.substring(1); // Verwijder de @
+          username = part.substring(1);
         }
       }
       
-      // Zoek de post ID: dit is de LAATSTE numerieke string in de path
       for (let i = pathParts.length - 1; i >= 0; i--) {
         const part = pathParts[i];
         if (/^\d+$/.test(part)) {
@@ -148,7 +195,6 @@ function handleFormSubmit(event) {
         }
       }
       
-      // Als we geen username vonden, probeer dan uit de URL te halen
       if (!username) {
         const atMatch = currentPostUrl.match(/@([^\/\?#]+)/);
         if (atMatch) {
@@ -156,17 +202,12 @@ function handleFormSubmit(event) {
         }
       }
       
-      // Debug log
-      console.log(`Parsed: username=${username}, postId=${postId}, host=${originalHost}`);
-      
-      // Bouw de nieuwe URL
       if (username && postId) {
         const federatedUsername = `@${username}@${originalHost}`;
         const newUrl = `${normalizedInstance}/${federatedUsername}/${postId}`;
         console.log(`Opening: ${newUrl}`);
         window.open(newUrl, '_blank');
       } else {
-        // Fallback: open gewoon de originele post
         console.log('Fallback to original post URL');
         window.open(currentPostUrl, '_blank');
       }
@@ -175,7 +216,6 @@ function handleFormSubmit(event) {
     closePostModal();
   } catch (error) {
     console.error('Failed to parse post URL:', error);
-    // Fallback: open gewoon de originele post
     window.open(currentPostUrl, '_blank');
     closePostModal();
   }
