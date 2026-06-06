@@ -265,17 +265,6 @@ export class List {
   // POSTS (SYNC requests to Accounts for their cached posts)
   // ============================================
 
-  getAllCachedPosts() {
-    const allPosts = [];
-    
-    for (const account of this.accounts.values()) {
-      const posts = account.getCachedPosts();
-      allPosts.push(...posts);
-    }
-    
-    return this.sortAndDeduplicate(allPosts);
-  }
-
   async getPosts(limit = 20, sinceId = null, maxId = null) {
     const allPosts = [];
     

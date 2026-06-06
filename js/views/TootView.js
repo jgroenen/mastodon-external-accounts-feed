@@ -3,6 +3,8 @@
  * Gebruikt HTML template in plaats van innerHTML
  */
 
+import { escapeHtml, stripHtml } from '../utils/db.js';
+
 // ============================================
 // CONSTANTS
 // ============================================
@@ -12,16 +14,6 @@ const TEMPLATE_ID = 'toot-template';
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
 
 /**
  * Format date for display
@@ -84,10 +76,6 @@ function buildMediaHtml(mediaAttachments) {
   return '';
 }
 
-// ============================================
-// MAIN FUNCTION
-// ============================================
-
 /**
  * Get the icon filename based on count
  * If count > 0, use active- prefix
@@ -104,6 +92,10 @@ function getIconName(type, count) {
   
   return prefix + iconMap[type];
 }
+
+// ============================================
+// MAIN FUNCTION
+// ============================================
 
 /**
  * Create a DOM element for a single toot/post using the HTML template
@@ -149,7 +141,7 @@ export function createTootElement(post) {
     '{url}': post.url || '#',
     '{date}': date,
     '{fullDate}': fullDate,
-    '{content}': post.content || '',
+    '{content}': stripHtml(post.content || ''),
     '{mediaHtml}': mediaHtml || '',
     '{replyIcon}': replyIcon,
     '{boostIcon}': boostIcon,
@@ -170,7 +162,6 @@ export function createTootElement(post) {
     const value = replacements[match];
     // If value is undefined or null, return empty string to remove the placeholder
     if (value == null) {
-      console.warn(`Placeholder ${match} not found in replacements`);
       return '';
     }
     return value;
@@ -180,4 +171,4 @@ export function createTootElement(post) {
   return article;
 }
 
-export { escapeHtml, formatDate, getHost };
+export { stripHtml };

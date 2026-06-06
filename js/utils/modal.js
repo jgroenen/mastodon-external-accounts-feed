@@ -122,7 +122,6 @@ function handleFormSubmit(event) {
   // Mastodon zal de post ophalen via ActivityPub
   const searchUrl = `${normalizedInstance}/search?q=${encodeURIComponent(postUrlToUse)}`;
   
-  console.log(`Opening search: ${searchUrl}`);
   window.open(searchUrl, '_blank');
   closePostModal();
 }
