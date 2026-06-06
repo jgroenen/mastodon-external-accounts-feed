@@ -117,8 +117,7 @@
         .media-attachments { margin-top: 12px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
         .media-attachments img { width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover; }
         .toot-actions { display: flex; margin-top: 15px; color: var(--text-muted); }
-        .action-btn { display: flex; align-items: center; margin-right: 30px; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; }
-        .action-btn:hover, .action-btn:focus { color: var(--accent-color); text-decoration: underline; outline: none; }
+        .action-btn { display: flex; align-items: center; margin-right: 30px; font-size: 0.85rem; color: var(--text-muted); cursor: default; }
         .action-btn svg { width: 18px; height: 18px; margin-right: 5px; fill: currentColor; }
 
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
@@ -203,21 +202,21 @@
       <div class="toot-content">{content}</div>
       {mediaHtml}
       <div class="toot-actions">
-        <a href="{url}" target="_blank" class="action-btn">
+        <span class="action-btn">
           {replyIcon} {repliesCount}
-          <span class="sr-only">reacties. Reageer op de originele server.</span>
-        </a>
-        <a href="{url}" target="_blank" class="action-btn">
+          <span class="sr-only">reacties</span>
+        </span>
+        <span class="action-btn">
           {boostIcon} {reblogsCount}
-          <span class="sr-only">boosts. Deel vanaf je eigen server.</span>
-        </a>
-        <a href="{url}" target="_blank" class="action-btn">
+          <span class="sr-only">boosts</span>
+        </span>
+        <span class="action-btn">
           {favouriteIcon} {favouritesCount}
-          <span class="sr-only">favorieten. Bewaar dit bericht.</span>
-        </a>
+          <span class="sr-only">favorieten</span>
+        </span>
       </div>
       <div class="toot-footer">
-        <a href="{url}" target="_blank" class="original-post-link">Ga naar originele post.</a>
+        <a href="{url}" target="_blank" class="original-post-link">Bekijk originele post.</a>
       </div>
     </article>
   </template>
