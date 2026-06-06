@@ -7,7 +7,9 @@
         { "instance": "https://social.codefor.nl", "username": "johan" },
         { "instance": "https://social.codefor.nl", "username": "tomootes" },
         { "instance": "https://waag.social", "username": "marleenstikker" },
-        { "instance": "https://waag.social", "username": "sander" }
+        { "instance": "https://waag.social", "username": "sander" },
+        { "instance": "https://mastodon.social", "username": "jpagroenen" },
+        { "instance": "https://mastodon.nl", "username": "jpagroenen" }
       ]
     },
     {

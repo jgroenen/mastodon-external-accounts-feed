@@ -89,6 +89,23 @@ function buildMediaHtml(mediaAttachments) {
 // ============================================
 
 /**
+ * Get the icon filename based on count
+ * If count > 0, use active- prefix
+ */
+function getIconName(type, count) {
+  const countNum = Number(count) || 0;
+  const prefix = countNum > 0 ? 'active-' : '';
+  
+  const iconMap = {
+    reply: 're',
+    boost: 'boost',
+    favourite: 'star'
+  };
+  
+  return prefix + iconMap[type];
+}
+
+/**
  * Create a DOM element for a single toot/post using the HTML template
  */
 export function createTootElement(post) {
@@ -110,6 +127,11 @@ export function createTootElement(post) {
   const host = getHost(post.instance);
   const mediaHtml = buildMediaHtml(post.mediaAttachments);
   
+  // Get icon names based on counts
+  const replyIcon = getIconName('reply', post.repliesCount);
+  const boostIcon = getIconName('boost', post.reblogsCount);
+  const favouriteIcon = getIconName('favourite', post.favouritesCount);
+  
   // Replace placeholders with safe defaults
   const replacements = {
     '{mastodonId}': post.mastodonId || '',
@@ -123,6 +145,9 @@ export function createTootElement(post) {
     '{fullDate}': fullDate,
     '{content}': post.content || '',
     '{mediaHtml}': mediaHtml || '',
+    '{replyIcon}': replyIcon,
+    '{boostIcon}': boostIcon,
+    '{favouriteIcon}': favouriteIcon,
     '{repliesCount}': String(post.repliesCount || 0),
     '{reblogsCount}': String(post.reblogsCount || 0),
     '{favouritesCount}': String(post.favouritesCount || 0)
