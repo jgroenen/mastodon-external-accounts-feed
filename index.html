@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gecureerde Overheidsfeed</title>
     <style>
-        /* CSS Variabelen voor de twee modi */
         :root {
-            /* Standaard Donkere Modus (Mastodon) */
             --bg-color: #191b22;
             --surface-color: #282c37;
             --text-color: #ffffff;
@@ -17,7 +15,6 @@
         }
 
         :root.light-mode {
-            /* Lichte Modus */
             --bg-color: #f2f3f5;
             --surface-color: #ffffff;
             --text-color: #000000;
@@ -50,7 +47,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .header-left h1 {
@@ -65,7 +64,6 @@
             margin-top: 2px;
         }
 
-        /* Thema Knop Styling */
         .theme-toggle-btn {
             background: none;
             border: 1px solid var(--border-color);
@@ -78,169 +76,46 @@
             align-items: center;
             gap: 6px;
             background-color: var(--bg-color);
-            transition: background-color 0.2s ease, border-color 0.2s ease;
         }
 
-        .theme-toggle-btn:hover {
-            border-color: var(--accent-color);
-        }
+        .theme-toggle-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
-        .theme-toggle-btn svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-        }
-
-        /* De Tijdlijn Stroom */
-        #timeline {
-            display: flex;
-            flex-direction: column;
-        }
+        #timeline { display: flex; flex-direction: column; }
 
         .toot {
             background-color: var(--surface-color);
             padding: 20px;
             border-bottom: 1px solid var(--border-color);
             animation: fadeIn 0.3s ease-in-out;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
         }
 
-        .toot:last-child {
-            border-radius: 0 0 4px 4px;
-            border-bottom: none;
-        }
+        .toot:last-of-type { border-radius: 0 0 4px 4px; }
 
-        /* Toot Header */
-        .toot-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            position: relative;
-        }
+        .toot-header { display: flex; align-items: center; margin-bottom: 15px; position: relative; }
+        .avatar { width: 46px; height: 46px; border-radius: 4px; margin-right: 12px; }
+        .account-info { display: flex; flex-direction: column; line-height: 1.3; }
+        .display-name { font-weight: 700; color: var(--text-color); text-decoration: none; }
+        .username { color: var(--text-muted); font-size: 0.9rem; }
+        .timestamp { position: absolute; top: 0; right: 0; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; }
+        .toot-content { font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
+        .toot-content p { margin: 0 0 10px 0; }
+        .toot-content a { color: var(--accent-color); text-decoration: none; }
+        .media-attachments { margin-top: 12px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
+        .media-attachments img { width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover; }
+        
+        .toot-actions { display: flex; margin-top: 15px; color: var(--text-muted); }
+        .action-btn { display: flex; align-items: center; margin-right: 30px; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; }
+        .action-btn svg { width: 18px; height: 18px; margin-right: 5px; fill: currentColor; }
 
-        .avatar {
-            width: 46px;
-            height: 46px;
-            border-radius: 4px;
-            margin-right: 12px;
-            background-color: var(--bg-color);
-        }
-
-        .account-info {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.3;
-        }
-
-        .display-name {
-            font-weight: 700;
-            color: var(--text-color);
-            text-decoration: none;
-        }
-
-        .display-name:hover {
-            text-decoration: underline;
-        }
-
-        .username {
+        /* Infinite Scroll Indicators */
+        .loading-trigger {
+            padding: 20px;
+            text-align: center;
             color: var(--text-muted);
             font-size: 0.9rem;
         }
 
-        .timestamp {
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-decoration: none;
-        }
-
-        .timestamp:hover {
-            text-decoration: underline;
-        }
-
-        /* Toot Content */
-        .toot-content {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .toot-content p {
-            margin: 0 0 10px 0;
-        }
-
-        .toot-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        .toot-content a {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-
-        .toot-content a:hover {
-            text-decoration: underline;
-        }
-
-        /* Media */
-        .media-attachments {
-            margin-top: 12px;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-color);
-        }
-
-        .media-attachments img {
-            width: 100%;
-            height: auto;
-            display: block;
-            max-height: 400px;
-            object-fit: cover;
-        }
-
-        /* Actieknoppen */
-        .toot-actions {
-            display: flex;
-            margin-top: 15px;
-            color: var(--text-muted);
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            margin-right: 30px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .action-btn:hover {
-            color: var(--accent-color);
-        }
-
-        .action-btn svg {
-            width: 18px;
-            height: 18px;
-            margin-right: 5px;
-            fill: currentColor;
-        }
-
-        .loading {
-            padding: 40px;
-            text-align: center;
-            color: var(--text-muted);
-            background-color: var(--surface-color);
-            border-radius: 0 0 4px 4px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -251,49 +126,38 @@
             <h1>Gecureerde Overheidsfeed</h1>
             <div class="status" id="status-text">Laden...</div>
         </div>
-        <button class="theme-toggle-btn" id="theme-btn" aria-label="Wissel dag/nacht modus">
-            <!-- Zon-icoon (standaard getoond in donkere modus) -->
+        <button class="theme-toggle-btn" id="theme-btn">
             <svg id="theme-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM7.05 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.02-.39-1.41 0z"/></svg>
             <span id="theme-text">Lichte modus</span>
         </button>
     </header>
 
-    <div id="timeline">
-        <div class="loading">Berichten ophalen uit het Fediverse...</div>
-    </div>
+    <div id="timeline"></div>
+    
+    <!-- Dit element markeert de bodem van de pagina -->
+    <div id="load-more-trigger" class="loading-trigger">Berichten laden...</div>
 </div>
 
 <script>
-    // Thema Logica (Dag / Nacht modus)
+    // Theme toggler (onveranderd)
     const themeBtn = document.getElementById('theme-btn');
     const themeText = document.getElementById('theme-text');
     const themeIcon = document.getElementById('theme-icon');
     const htmlElement = document.documentElement;
-
-    // SVG paden voor zon en maan
     const sunPath = "M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM7.05 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.02-.39-1.41 0z";
     const moonPath = "M12.3 22h-.1c-5.5 0-10-4.5-10-10 0-4.8 3.5-8.9 8.2-9.8.6-.1 1.2.4 1.1 1-.1.6-.2 1.2-.2 1.8 0 5.2 4.3 9.5 9.5 9.5.6 0 1.2-.1 1.8-.2.6-.1 1.1.4 1 1-.9 4.7-5 8.2-9.8 8.2zm-7.1-10c0 3.9 3.1 7 7 7 2.4 0 4.6-1.2 5.9-3.2-1.2.2-2.4.3-3.7.3-6.3 0-11.5-5.2-11.5-11.5 0-1.3.2-2.5.5-3.7-2 1.3-3.2 3.5-3.2 5.9z";
 
-    // Check of er al een opgeslagen voorkeur is
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
+    if (localStorage.getItem('theme') === 'light') {
         htmlElement.classList.add('light-mode');
         themeText.textContent = 'Donkere modus';
         themeIcon.querySelector('path').setAttribute('d', moonPath);
     }
-
     themeBtn.addEventListener('click', () => {
         htmlElement.classList.toggle('light-mode');
-        
-        if (htmlElement.classList.contains('light-mode')) {
-            localStorage.setItem('theme', 'light');
-            themeText.textContent = 'Donkere modus';
-            themeIcon.querySelector('path').setAttribute('d', moonPath);
-        } else {
-            localStorage.setItem('theme', 'dark');
-            themeText.textContent = 'Lichte modus';
-            themeIcon.querySelector('path').setAttribute('d', sunPath);
-        }
+        const isLight = htmlElement.classList.contains('light-mode');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        themeText.textContent = isLight ? 'Donkere modus' : 'Lichte modus';
+        themeIcon.querySelector('path').setAttribute('d', isLight ? moonPath : sunPath);
     });
 
     const icons = {
@@ -302,52 +166,113 @@
         favourite: `<svg viewBox="0 0 16 16"><path d="M8 11.5l-3.5 2.5 1-4.2-3.2-3 4.3-.4L8 2.5l1.4 3.9 4.3.4-3.2 3 1 4.2z"/></svg>`
     };
 
-    async function fetchTimeline() {
-        const timelineElement = document.getElementById('timeline');
+    // --- INFINITE SCROLL STATE ENGINE ---
+    let sources = [];         // Bevat de geconfigureerde accounts met hun specifieke state
+    let postBuffer = [];      // Bewaart overgebleven gesorteerde posts voor de volgende scroll
+    let isFetching = false;   // Voorkomt dubbele triggers tijdens scrollen
+    const WINDOW_SIZE = 10;   // Aantal posts dat we per scroll-actie toevoegen
+
+    async function initFeed() {
         const statusElement = document.getElementById('status-text');
-        let allToots = [];
-
         try {
-            const targetAccounts = await fetch('accounts.json').then(res => res.json());
+            // 1. Laad de accounts uit JSON
+            const accounts = await fetch('accounts.json').then(res => res.json());
             
-            for (const account of targetAccounts) {
-                const lookupUrl = `${account.instance}/api/v1/accounts/lookup?acct=${account.username}`;
-                const lookupResponse = await fetch(lookupUrl);
+            // 2. Bouw voor elke bron de interne staat op en zoek het Account ID op
+            for (const acc of accounts) {
+                const lookupUrl = `${acc.instance}/api/v1/accounts/lookup?acct=${acc.username}`;
+                const res = await fetch(lookupUrl);
+                if (!res.ok) continue;
+                const data = await res.json();
                 
-                if (!lookupResponse.ok) continue;
-                const accountData = await lookupResponse.json();
-                const accountId = accountData.id;
-
-                const statusesUrl = `${account.instance}/api/v1/accounts/${accountId}/statuses?limit=10&exclude_reblogs=true`;
-                const statusesResponse = await fetch(statusesUrl);
-                
-                if (!statusesResponse.ok) continue;
-                const toots = await statusesResponse.json();
-
-                toots.forEach(toot => toot.originalInstance = account.instance);
-                allToots = allToots.concat(toots);
+                sources.push({
+                    instance: acc.instance,
+                    username: acc.username,
+                    id: data.id,
+                    lowestIdSeen: null, // Cursor voor paginering (max_id)
+                    hasMore: true       // Of de server leeg is
+                });
             }
 
-            allToots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            // 3. Start de Intersection Observer voor de bodem van de pagina
+            const trigger = document.getElementById('load-more-trigger');
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !isFetching) {
+                    loadNextWindow();
+                }
+            }, { rootMargin: '300px' }); // Trigger al 300px vóór de bodem voor vloeiende ervaring
+            
+            observer.observe(trigger);
 
-            if (allToots.length === 0) {
-                timelineElement.innerHTML = `<div class="loading">Geen berichten gevonden.</div>`;
-                statusElement.textContent = '0 berichten';
-                return;
-            }
-
-            timelineElement.innerHTML = '';
-            allToots.forEach(toot => {
-                timelineElement.appendChild(createTootElement(toot));
-            });
-
-            statusElement.textContent = 'Live bijgewerkt';
-
-        } catch (error) {
-            console.error(error);
-            timelineElement.innerHTML = `<div class="loading" style="color: #ff5353;">Fout bij het laden van de feed. Probeer het later opnieuw.</div>`;
+        } catch (e) {
+            console.error(e);
+            document.getElementById('timeline').innerHTML = `<div class="loading-trigger" style="color:red">Initialisatiefout</div>`;
             statusElement.textContent = 'Fout';
         }
+    }
+
+    async function loadNextWindow() {
+        isFetching = true;
+        const timelineElement = document.getElementById('timeline');
+        const statusElement = document.getElementById('status-text');
+        statusElement.textContent = 'Laden...';
+
+        let newBatch = [];
+
+        // Haal van ELKE actieve bron nieuwe posts op gebaseerd op hun individuele cursor
+        for (const source of sources) {
+            if (!source.hasMore) continue;
+
+            let url = `${source.instance}/api/v1/accounts/${source.id}/statuses?limit=${WINDOW_SIZE}&exclude_reblogs=true`;
+            if (source.lowestIdSeen) {
+                url += `&max_id=${source.lowestIdSeen}`; // Vraag alleen oudere posts op dan de cursor
+            }
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) { source.hasMore = false; continue; }
+                const toots = await res.json();
+
+                if (toots.length === 0) {
+                    source.hasMore = false;
+                    continue;
+                }
+
+                // Update de cursor naar het alleroudste bericht in deze specifieke batch
+                source.lowestIdSeen = toots[toots.length - 1].id;
+
+                // Label de posts zodat we weten van welke instance ze komen
+                toots.forEach(t => t.originalInstance = source.instance);
+                newBatch = newBatch.concat(toots);
+            } catch (e) {
+                console.error(`Fout bij laden van ${source.username}:`, e);
+            }
+        }
+
+        // Voeg de nieuwe oogst samen met wat we eventueel nog in de buffer hadden van vorige keer
+        let pool = postBuffer.concat(newBatch);
+
+        // Sorteer de hele pool streng chronologisch (nieuwste eerst)
+        pool.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // Splits de pool: pak de top X voor het scherm, bewaar de rest in de buffer
+        const toDisplay = pool.slice(0, WINDOW_SIZE);
+        postBuffer = pool.slice(WINDOW_SIZE);
+
+        // Render de geselecteerde posts
+        toDisplay.forEach(toot => {
+            timelineElement.appendChild(createTootElement(toot));
+        });
+
+        // Check of we echt helemaal aan het einde zijn
+        const stillHasMore = sources.some(s => s.hasMore) || postBuffer.length > 0;
+        if (!stillHasMore) {
+            document.getElementById('load-more-trigger').textContent = 'Einde van de feed bereikt.';
+            document.getElementById('load-more-trigger').style.display = 'block';
+        }
+
+        statusElement.textContent = 'Live bijgewerkt';
+        isFetching = false;
     }
 
     function createTootElement(toot) {
@@ -361,51 +286,24 @@
         let mediaHtml = '';
         if (toot.media_attachments && toot.media_attachments.length > 0) {
             const mediaItem = toot.media_attachments[0];
-            
             if (mediaItem.type === 'image') {
-                const imgUrl = mediaItem.preview_url || mediaItem.url;
-                mediaHtml = `
-                    <div class="media-attachments">
-                        <img src="${imgUrl}" alt="${mediaItem.description || 'Afbeelding'}" loading="lazy" referrerpolicy="no-referrer">
-                    </div>
-                `;
+                mediaHtml = `<div class="media-attachments"><img src="${mediaItem.preview_url || mediaItem.url}" alt="${mediaItem.description || ''}" loading="lazy" referrerpolicy="no-referrer"></div>`;
             } else if (mediaItem.type === 'video' || mediaItem.type === 'gifv') {
-                const videoUrl = mediaItem.url;
-                const posterUrl = mediaItem.preview_url || '';
-                const isGifv = mediaItem.type === 'gifv';
-
-                mediaHtml = `
-                    <div class="media-attachments">
-                        <video 
-                            src="${videoUrl}" 
-                            poster="${posterUrl}" 
-                            controls 
-                            ${isGifv ? 'loop muted autoplay playsinline' : ''} 
-                            preload="none" 
-                            style="width: 100%; max-height: 400px; display: block; object-fit: cover;"
-                            referrerpolicy="no-referrer">
-                            Je browser ondersteunt deze video-tag niet.
-                        </video>
-                    </div>
-                `;
+                mediaHtml = `<div class="media-attachments"><video src="${mediaItem.url}" poster="${mediaItem.preview_url || ''}" controls ${mediaItem.type === 'gifv' ? 'loop muted autoplay playsinline' : ''} preload="none" style="width: 100%; max-height: 400px; display: block; object-fit: cover;" referrerpolicy="no-referrer"></video></div>`;
             }
         }
 
         const instanceHost = toot.originalInstance.replace('https://', '');
-        const fullHandle = `@${toot.account.acct}@${instanceHost}`;
-
         tootDiv.innerHTML = `
             <div class="toot-header">
-                <img class="avatar" src="${toot.account.avatar}" alt="Avatar" referrerpolicy="no-referrer">
+                <img class="avatar" src="${toot.account.avatar}" alt="" referrerpolicy="no-referrer">
                 <div class="account-info">
                     <a href="${toot.account.url}" target="_blank" class="display-name">${toot.account.display_name}</a>
-                    <span class="username">${fullHandle}</span>
+                    <span class="username">@${toot.account.acct}@${instanceHost}</span>
                 </div>
-                <a href="${toot.url}" target="_blank" class="timestamp" title="${new Date(toot.created_at).toLocaleString()}">${tootDate}</a>
+                <a href="${toot.url}" target="_blank" class="timestamp">${tootDate}</a>
             </div>
-            <div class="toot-content">
-                ${toot.content}
-            </div>
+            <div class="toot-content">${toot.content}</div>
             ${mediaHtml}
             <div class="toot-actions">
                 <a href="${toot.url}" target="_blank" class="action-btn">${icons.reply} ${toot.replies_count || 0}</a>
@@ -413,12 +311,10 @@
                 <a href="${toot.url}" target="_blank" class="action-btn">${icons.favourite} ${toot.favourites_count || 0}</a>
             </div>
         `;
-
         return tootDiv;
     }
 
-    window.addEventListener('DOMContentLoaded', fetchTimeline);
+    window.addEventListener('DOMContentLoaded', initFeed);
 </script>
-
 </body>
 </html>
