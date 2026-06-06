@@ -1,6 +1,16 @@
 {
   "lists": [
     {
+      "name": "Public Tech Peeps",
+      "slug": "publictech",
+      "accounts": [
+        { "instance": "https://social.codefor.nl", "username": "johan" },
+        { "instance": "https://social.codefor.nl", "username": "tomootes" },
+        { "instance": "https://waag.social", "username": "marleenstikker" },
+        { "instance": "https://waag.social", "username": "sander" }
+      ]
+    },
+    {
       "name": "Rijksoverheid",
       "slug": "rijksoverheid",
       "accounts": [
@@ -18,8 +28,8 @@
       ]
     },
     {
-      "name": "Lokale Overheid",
-      "slug": "lokaal",
+      "name": "Gemeenten",
+      "slug": "gemeenten",
       "accounts": [
         { "instance": "https://social.amsterdam.nl", "username": "gemeenteamsterdam" }
       ]
@@ -28,7 +38,8 @@
       "name": "Politici",
       "slug": "politici",
       "accounts": [
-        { "instance": "https://mastodon.social", "username": "LisaWesterveld" }
+        { "instance": "https://mastodon.social", "username": "LisaWesterveld" },
+        { "instance": "https://mstdn.social", "username": "barbarakathmann" }
       ]
     }
   ]
