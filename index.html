@@ -237,9 +237,8 @@
         let allToots = [];
 
         try {
-            // Loop door alle geconfigureerde accounts heen
             for (const account of targetAccounts) {
-                // Stap 1: Vraag het interne Account ID op via de handgreep/username
+                // Stap 1: Vraag het interne Account ID op via lookup
                 const lookupUrl = `${account.instance}/api/v1/accounts/lookup?acct=${account.username}`;
                 const lookupResponse = await fetch(lookupUrl);
                 
@@ -247,23 +246,20 @@
                 const accountData = await lookupResponse.json();
                 const accountId = accountData.id;
 
-                // Stap 2: Haal de meest recente publieke posts op met dat ID
+                // Stap 2: Haal de meest recente publieke posts op
                 const statusesUrl = `${account.instance}/api/v1/accounts/${accountId}/statuses?limit=10&exclude_reblogs=true`;
                 const statusesResponse = await fetch(statusesUrl);
                 
                 if (!statusesResponse.ok) continue;
                 const toots = await statusesResponse.json();
 
-                // Voeg de instance URL toe aan de data voor het bouwen van correcte links later
                 toots.forEach(toot => toot.originalInstance = account.instance);
-                
                 allToots = allToots.concat(toots);
             }
 
             // Stap 3: Sorteer ALLE gecombineerde posts op datum (nieuwste bovenaan)
             allToots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-            // Stap 4: Render de HTML
             if (allToots.length === 0) {
                 timelineElement.innerHTML = `<div class="loading">Geen berichten gevonden.</div>`;
                 statusElement.textContent = '0 berichten';
@@ -288,31 +284,31 @@
         const tootDiv = document.createElement('div');
         tootDiv.className = 'toot';
 
-        // Tijdstempel converteren naar een leesbare relatieve/korte datum
         const tootDate = new Date(toot.created_at).toLocaleDateString('nl-NL', {
             day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'
         });
 
-        // Check op media attachments (afbeeldingen)
+        // VERBETERD: Check op media attachments en gebruik de preview_url of url zonder CORS restricties te triggeren
         let mediaHtml = '';
         if (toot.media_attachments && toot.media_attachments.length > 0) {
-            const imageArr = toot.media_attachments.filter(m => m.type === 'image');
-            if (imageArr.length > 0) {
+            // Pak de eerste afbeelding
+            const mediaItem = toot.media_attachments.find(m => m.type === 'image' || m.type === 'gifv');
+            if (mediaItem) {
+                const imgUrl = mediaItem.preview_url || mediaItem.url;
                 mediaHtml = `
                     <div class="media-attachments">
-                        <img src="${imageArr[0].url}" alt="${imageArr[0].description || 'Afbeelding'}" loading="lazy">
+                        <img src="${imgUrl}" alt="${mediaItem.description || 'Afbeelding'}" loading="lazy" referrerpolicy="no-referrer">
                     </div>
                 `;
             }
         }
 
-        // Genereer de unieke Mastodon handgreep van de auteur
         const instanceHost = toot.originalInstance.replace('https://', '');
         const fullHandle = `@${toot.account.acct}@${instanceHost}`;
 
         tootDiv.innerHTML = `
             <div class="toot-header">
-                <img class="avatar" src="${toot.account.avatar}" alt="Avatar">
+                <img class="avatar" src="${toot.account.avatar}" alt="Avatar" referrerpolicy="no-referrer">
                 <div class="account-info">
                     <a href="${toot.account.url}" target="_blank" class="display-name">${toot.account.display_name}</a>
                     <span class="username">${fullHandle}</span>
@@ -333,7 +329,6 @@
         return tootDiv;
     }
 
-    // Start de app zodra de pagina geladen is
     window.addEventListener('DOMContentLoaded', fetchTimeline);
 </script>
 
