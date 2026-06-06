@@ -5,13 +5,12 @@
 
 import { escapeHtml } from '../utils/db.js';
 
-// HELPER FUNCTIONS
+// ============================================
+// CONSTANTS
 // ============================================
 
-/**
- * Format date for display
- */
-=======
+const TEMPLATE_ID = 'toot-template';
+
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
@@ -96,18 +95,6 @@ function sanitizeUrl(url) {
   }
   return url;
 }
-
-/**
- * Format date for display
- */============================================
-// CONSTANTS
-// ============================================
-
-const TEMPLATE_ID = 'toot-template';
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
 
 /**
  * Format date for display
@@ -264,5 +251,3 @@ export function createTootElement(post) {
   
   return article;
 }
-
-
