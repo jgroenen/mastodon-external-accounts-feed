@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gecureerde Cultuur & Overheid Feed</title>
+    <style>
+        /* Mastodon Kleurenpalet & Basis Styling */
+        :root {
+            --bg-color: #191b22;
+            --surface-color: #282c37;
+            --text-color: #ffffff;
+            --text-muted: #9baec8;
+            --accent-color: #6364ff;
+            --accent-hover: #5354ed;
+            --border-color: #393f4f;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header {
+            background-color: var(--surface-color);
+            padding: 15px 20px;
+            border-radius: 4px 4px 0 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* De Tijdlijn Stroom */
+        #timeline {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toot {
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .toot:last-child {
+            border-radius: 0 0 4px 4px;
+            border-bottom: none;
+        }
+
+        /* Toot Header (Profiel info) */
+        .toot-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 4px;
+            margin-right: 12px;
+            background-color: var(--bg-color);
+        }
+
+        .account-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.3;
+        }
+
+        .display-name {
+            font-weight: 700;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .display-name:hover {
+            text-decoration: underline;
+        }
+
+        .username {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .timestamp {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .timestamp:hover {
+            text-decoration: underline;
+        }
+
+        /* Toot Content (Tekst & Media) */
+        .toot-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .toot-content p {
+            margin: 0 0 10px 0;
+        }
+
+        .toot-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .toot-content a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .toot-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Media Attachments (Afbeeldingen) */
+        .media-attachments {
+            margin-top: 12px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+        }
+
+        .media-attachments img {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        /* Mastodon Actieknoppen */
+        .toot-actions {
+            display: flex;
+            margin-top: 15px;
+            color: var(--text-muted);
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            margin-right: 30px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            color: var(--accent-color);
+        }
+
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+            margin-right: 5px;
+            fill: currentColor;
+        }
+
+        /* Loading & Error */
+        .loading {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            background-color: var(--surface-color);
+            border-radius: 0 0 4px 4px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Gecureerde Overheidsfeed</h1>
+        <div class="status" id="status-text">Laden...</div>
+    </header>
+
+    <div id="timeline">
+        <div class="loading">Berichten ophalen uit het Fediverse...</div>
+    </div>
+</div>
+
+<script>
+    // Configuratielijst van de externe accounts
+    const targetAccounts = [
+        { instance: 'https://social.amsterdam.nl', username: 'gemeenteamsterdam' },
+        { instance: 'https://social.overheid.nl', username: 'stasdigi' }
+    ];
+
+    // SVG iconen voor de herkenbare Mastodon knoppen
+    const icons = {
+        reply: `<svg viewBox="0 0 16 16"><path d="M6.5 3.5v-2L1 6.5l5.5 5v-2c3.7 0 6 2 6 2s-.7-3.5-6-4z"/></svg>`,
+        boost: `<svg viewBox="0 0 16 16"><path d="M4 4.5h8v2l3-3-3-3v2H2v5h2v-3zm8 7H4v-2l-3 3 3 3v-2h10v-5h-2v3z"/></svg>`,
+        favourite: `<svg viewBox="0 0 16 16"><path d="M8 11.5l-3.5 2.5 1-4.2-3.2-3 4.3-.4L8 2.5l1.4 3.9 4.3.4-3.2 3 1 4.2z"/></svg>`
+    };
+
+    async function fetchTimeline() {
+        const timelineElement = document.getElementById('timeline');
+        const statusElement = document.getElementById('status-text');
+        let allToots = [];
+
+        try {
+            // Loop door alle geconfigureerde accounts heen
+            for (const account of targetAccounts) {
+                // Stap 1: Vraag het interne Account ID op via de handgreep/username
+                const lookupUrl = `${account.instance}/api/v1/accounts/lookup?acct=${account.username}`;
+                const lookupResponse = await fetch(lookupUrl);
+                
+                if (!lookupResponse.ok) continue;
+                const accountData = await lookupResponse.json();
+                const accountId = accountData.id;
+
+                // Stap 2: Haal de meest recente publieke posts op met dat ID
+                const statusesUrl = `${account.instance}/api/v1/accounts/${accountId}/statuses?limit=10&exclude_reblogs=true`;
+                const statusesResponse = await fetch(statusesUrl);
+                
+                if (!statusesResponse.ok) continue;
+                const toots = await statusesResponse.json();
+
+                // Voeg de instance URL toe aan de data voor het bouwen van correcte links later
+                toots.forEach(toot => toot.originalInstance = account.instance);
+                
+                allToots = allToots.concat(toots);
+            }
+
+            // Stap 3: Sorteer ALLE gecombineerde posts op datum (nieuwste bovenaan)
+            allToots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            // Stap 4: Render de HTML
+            if (allToots.length === 0) {
+                timelineElement.innerHTML = `<div class="loading">Geen berichten gevonden.</div>`;
+                statusElement.textContent = '0 berichten';
+                return;
+            }
+
+            timelineElement.innerHTML = '';
+            allToots.forEach(toot => {
+                timelineElement.appendChild(createTootElement(toot));
+            });
+
+            statusElement.textContent = 'Live bijgewerkt';
+
+        } catch (error) {
+            console.error(error);
+            timelineElement.innerHTML = `<div class="loading" style="color: #ff5353;">Fout bij het laden van de feed. Probeer het later opnieuw.</div>`;
+            statusElement.textContent = 'Fout';
+        }
+    }
+
+    function createTootElement(toot) {
+        const tootDiv = document.createElement('div');
+        tootDiv.className = 'toot';
+
+        // Tijdstempel converteren naar een leesbare relatieve/korte datum
+        const tootDate = new Date(toot.created_at).toLocaleDateString('nl-NL', {
+            day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'
+        });
+
+        // Check op media attachments (afbeeldingen)
+        let mediaHtml = '';
+        if (toot.media_attachments && toot.media_attachments.length > 0) {
+            const imageArr = toot.media_attachments.filter(m => m.type === 'image');
+            if (imageArr.length > 0) {
+                mediaHtml = `
+                    <div class="media-attachments">
+                        <img src="${imageArr[0].url}" alt="${imageArr[0].description || 'Afbeelding'}" loading="lazy">
+                    </div>
+                `;
+            }
+        }
+
+        // Genereer de unieke Mastodon handgreep van de auteur
+        const instanceHost = toot.originalInstance.replace('https://', '');
+        const fullHandle = `@${toot.account.acct}@${instanceHost}`;
+
+        tootDiv.innerHTML = `
+            <div class="toot-header">
+                <img class="avatar" src="${toot.account.avatar}" alt="Avatar">
+                <div class="account-info">
+                    <a href="${toot.account.url}" target="_blank" class="display-name">${toot.account.display_name}</a>
+                    <span class="username">${fullHandle}</span>
+                </div>
+                <a href="${toot.url}" target="_blank" class="timestamp" title="${new Date(toot.created_at).toLocaleString()}">${tootDate}</a>
+            </div>
+            <div class="toot-content">
+                ${toot.content}
+            </div>
+            ${mediaHtml}
+            <div class="toot-actions">
+                <a href="${toot.url}" target="_blank" class="action-btn">${icons.reply} ${toot.replies_count || 0}</a>
+                <a href="${toot.url}" target="_blank" class="action-btn">${icons.boost} ${toot.reblogs_count || 0}</a>
+                <a href="${toot.url}" target="_blank" class="action-btn">${icons.favourite} ${toot.favourites_count || 0}</a>
+            </div>
+        `;
+
+        return tootDiv;
+    }
+
+    // Start de app zodra de pagina geladen is
+    window.addEventListener('DOMContentLoaded', fetchTimeline);
+</script>
+
+</body>
+</html>
