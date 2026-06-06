@@ -4,7 +4,17 @@
       "name": "Rijksoverheid",
       "slug": "rijksoverheid",
       "accounts": [
-        { "instance": "https://social.overheid.nl", "username": "stasdigi" }
+        { "instance": "https://social.overheid.nl", "username": "stasdigi" },
+        { "instance": "https://social.overheid.nl", "username": "MinisterieEZK" },
+        { "instance": "https://social.overheid.nl", "username": "MinisterEZK" },
+        { "instance": "https://social.overheid.nl", "username": "MinisterVRO" },
+        { "instance": "https://social.overheid.nl", "username": "ministerievro" },
+        { "instance": "https://social.overheid.nl", "username": "minbzk" },
+        { "instance": "https://social.overheid.nl", "username": "minienw" },
+        { "instance": "https://social.overheid.nl", "username": "MinisterBZK" },
+        { "instance": "https://social.overheid.nl", "username": "minfinancien" },
+        { "instance": "https://social.overheid.nl", "username": "ministerielvvn" },
+        { "instance": "https://social.overheid.nl", "username": "staatssecretarisbzk" }
       ]
     },
     {
