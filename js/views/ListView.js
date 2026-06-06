@@ -109,9 +109,15 @@ export class ListView {
       const firstPostId = firstElement.dataset.postId;
       const firstNewPostId = newPosts[0]?.mastodonId;
       
-      if (firstPostId && firstNewPostId && firstNewPostId !== firstPostId) {
-        // Auto-prepend new posts (they come sorted from List)
-        this.prependPosts(newPosts);
+      // Check if the new posts are actually newer than what we have
+      if (firstPostId && firstNewPostId && firstNewPostId > firstPostId) {
+        // Only prepend posts that are newer than the current first post
+        const postsToPrepend = newPosts.filter(p => p.mastodonId > firstPostId);
+        if (postsToPrepend.length > 0) {
+          // Sort the posts to prepend by date (descending) just in case
+          postsToPrepend.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          this.prependPosts(postsToPrepend);
+        }
       }
     } else {
       this.renderTimeline(newPosts);

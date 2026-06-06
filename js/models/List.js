@@ -75,48 +75,6 @@ export class List {
     this.startAutoRefresh();
   }
 
-  // ============================================
-  // AUTO-REFRESH
-  // ============================================
-
-  startAutoRefresh(interval = 30000) {
-    // Clear any existing interval
-    this.stopAutoRefresh();
-    
-    // Set up periodic refresh
-    this.refreshInterval = setInterval(() => {
-      this.refreshAllPosts();
-    }, interval);
-  }
-
-  stopAutoRefresh() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      this.refreshInterval = null;
-    }
-  }
-
-  async refreshAllPosts() {
-    // Prevent concurrent refreshes
-    if (this.isRefreshing) return;
-    
-    this.isRefreshing = true;
-    
-    try {
-      const newPosts = await this.getNewPosts();
-      
-      if (newPosts.length > 0) {
-        // Batch and notify
-        this.pendingPosts.push(...newPosts);
-        this.scheduleNotification();
-      }
-    } catch (error) {
-      console.error(`List auto-refresh failed for ${this.slug}:`, error);
-    } finally {
-      this.isRefreshing = false;
-    }
-  }
-
   async loadFromCache() {
     const listData = await getFromDB(DB_TABLE, this.slug);
     if (listData) {
@@ -134,6 +92,45 @@ export class List {
         }
       });
     });
+  }
+
+  // ============================================
+  // AUTO-REFRESH
+  // ============================================
+
+  startAutoRefresh(interval = 30000) {
+    // Clear any existing interval
+    this.stopAutoRefresh();
+    
+    // Set up periodic refresh - this triggers accounts to fetch new posts
+    this.refreshInterval = setInterval(() => {
+      this.triggerAccountRefresh();
+    }, interval);
+  }
+
+  stopAutoRefresh() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
+  }
+
+  async triggerAccountRefresh() {
+    // Prevent concurrent refreshes
+    if (this.isRefreshing) return;
+    
+    this.isRefreshing = true;
+    
+    try {
+      // Trigger all accounts to fetch new posts
+      // They will notify us via handleAccountUpdate when they have new posts
+      const refreshPromises = Array.from(this.accounts.values()).map(acc => acc.refreshPosts());
+      await Promise.allSettled(refreshPromises);
+    } catch (error) {
+      console.error(`List trigger refresh failed for ${this.slug}:`, error);
+    } finally {
+      this.isRefreshing = false;
+    }
   }
 
   // ============================================
