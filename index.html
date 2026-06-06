@@ -149,6 +149,23 @@
             vertical-align: middle;
             margin-right: 5px;
         }
+        
+        .toot-footer {
+            margin-top: 10px;
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .original-post-link {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+        
+        .original-post-link:hover, .original-post-link:focus {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -198,6 +215,9 @@
           {favouriteIcon} {favouritesCount}
           <span class="sr-only">favorieten. Bewaar dit bericht.</span>
         </a>
+      </div>
+      <div class="toot-footer">
+        <a href="{url}" target="_blank" class="original-post-link">Ga naar originele post.</a>
       </div>
     </article>
   </template>
