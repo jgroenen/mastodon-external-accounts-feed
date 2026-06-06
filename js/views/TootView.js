@@ -3,9 +3,103 @@
  * Gebruikt HTML template in plaats van innerHTML
  */
 
-import { escapeHtml, stripHtml } from '../utils/db.js';
+import { escapeHtml } from '../utils/db.js';
 
+// HELPER FUNCTIONS
 // ============================================
+
+/**
+ * Format date for display
+ */
+=======
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Sanitize HTML content - allow only safe elements like links
+ * This prevents XSS while preserving Mastodon's formatted content
+ */
+function sanitizeHtml(html) {
+  if (!html) return '';
+  
+  // Create a temporary div to parse the HTML
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  
+  // Recursively sanitize all elements
+  const sanitizeNode = (node) => {
+    // Text nodes are safe
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.cloneNode(true);
+    }
+    
+    // Only allow specific safe elements
+    const allowedTags = ['a', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'code', 'pre', 'blockquote'];
+    const allowedAttributes = {
+      'a': ['href', 'title', 'rel', 'target']
+    };
+    
+    if (!allowedTags.includes(node.tagName?.toLowerCase())) {
+      // For disallowed elements, process their children
+      const fragment = document.createDocumentFragment();
+      for (const child of node.childNodes) {
+        fragment.appendChild(sanitizeNode(child));
+      }
+      return fragment;
+    }
+    
+    // Create new element
+    const newNode = document.createElement(node.tagName.toLowerCase());
+    
+    // Copy only allowed attributes
+    const allowedAttrs = allowedAttributes[node.tagName.toLowerCase()] || [];
+    for (const attr of allowedAttrs) {
+      if (node.hasAttribute(attr)) {
+        let value = node.getAttribute(attr);
+        // Sanitize href to prevent javascript: URLs
+        if (attr === 'href') {
+          value = sanitizeUrl(value);
+        }
+        newNode.setAttribute(attr, value);
+      }
+    }
+    
+    // Recursively process children
+    for (const child of node.childNodes) {
+      newNode.appendChild(sanitizeNode(child));
+    }
+    
+    return newNode;
+  };
+  
+  // Process all child nodes
+  const fragment = document.createDocumentFragment();
+  for (const child of tmp.childNodes) {
+    fragment.appendChild(sanitizeNode(child));
+  }
+  
+  // Return the sanitized HTML
+  const result = document.createElement('div');
+  result.appendChild(fragment);
+  return result.innerHTML;
+}
+
+/**
+ * Sanitize URLs to prevent javascript: and other dangerous protocols
+ */
+function sanitizeUrl(url) {
+  if (!url) return url;
+  // Allow http:, https:, and relative URLs
+  if (url.startsWith('javascript:') || url.startsWith('data:')) {
+    return '#';
+  }
+  return url;
+}
+
+/**
+ * Format date for display
+ */============================================
 // CONSTANTS
 // ============================================
 
@@ -141,7 +235,7 @@ export function createTootElement(post) {
     '{url}': post.url || '#',
     '{date}': date,
     '{fullDate}': fullDate,
-    '{content}': stripHtml(post.content || ''),
+    '{content}': sanitizeHtml(post.content || ''),
     '{mediaHtml}': mediaHtml || '',
     '{replyIcon}': replyIcon,
     '{boostIcon}': boostIcon,
@@ -171,4 +265,4 @@ export function createTootElement(post) {
   return article;
 }
 
-export { stripHtml };
+

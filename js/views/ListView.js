@@ -110,9 +110,10 @@ export class ListView {
       const firstNewPostId = newPosts[0]?.mastodonId;
       
       // Check if the new posts are actually newer than what we have
-      if (firstPostId && firstNewPostId && firstNewPostId > firstPostId) {
+      // Use BigInt for proper numeric comparison of Mastodon IDs
+      if (firstPostId && firstNewPostId && BigInt(firstNewPostId) > BigInt(firstPostId)) {
         // Only prepend posts that are newer than the current first post
-        const postsToPrepend = newPosts.filter(p => p.mastodonId > firstPostId);
+        const postsToPrepend = newPosts.filter(p => BigInt(p.mastodonId) > BigInt(firstPostId));
         if (postsToPrepend.length > 0) {
           // Sort the posts to prepend by date (descending) just in case
           postsToPrepend.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

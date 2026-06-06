@@ -16,24 +16,25 @@ const STORAGE_KEY = 'mastodon_user_instance';
 // STATE
 // ============================================
 
-let currentPostUrl = null;
+let currentPostData = null;
 
 // ============================================
 // MODAL FUNCTIONS
 // ============================================
 
 /**
- * Open de modal met de gegeven post URL
- * @param {string} postUrl - De URL van de post
+ * Open de modal met post data
+ * @param {Object} postData - Object met post URL, ActivityPub URI, etc.
  */
-export function openPostModal(postUrl) {
-  currentPostUrl = postUrl;
+export function openPostModal(postData) {
+  currentPostData = postData;
   
   const modal = document.getElementById(MODAL_ID);
   const originalLink = document.getElementById(ORIGINAL_LINK_ID);
   
   if (modal && originalLink) {
-    originalLink.href = postUrl;
+    // Gebruik de weergave URL voor de originele link
+    originalLink.href = postData.postUrl;
     modal.setAttribute('aria-hidden', 'false');
     
     // Focus op het invoerveld
@@ -59,6 +60,7 @@ export function closePostModal() {
   if (modal) {
     modal.setAttribute('aria-hidden', 'true');
     document.removeEventListener('keydown', handleKeyDown);
+    currentPostData = null;
   }
 }
 
@@ -87,13 +89,13 @@ function saveInstance(instance) {
 /**
  * Behandel form submission
  * Bouwt de URL en opent de post
- * Gebruikt /search?q= met de originele post URL voor betrouwbaarheid
+ * Gebruikt /search?q= met de ActivityPub URI voor betrouwbaarheid
  */
 function handleFormSubmit(event) {
   event.preventDefault();
   
   const input = document.getElementById(INSTANCE_INPUT_ID);
-  if (!input || !currentPostUrl) return;
+  if (!input || !currentPostData) return;
   
   const instance = input.value.trim();
   if (!instance) return;
@@ -107,20 +109,12 @@ function handleFormSubmit(event) {
     normalizedInstance = 'https://' + normalizedInstance;
   }
   
-  // Gebruik de originele post URL uit de button's data-attribuut
-  // De button heeft data-post-url met de weergave URL
-  // Maar we willen de ActivityPub URI als die beschikbaar is
-  const activeBtn = document.querySelector('.open-post-btn[data-post-url]');
-  let postUrlToUse = currentPostUrl;
+  // Gebruik de ActivityPub URI als die beschikbaar is, anders de weergave URL
+  let postUriToUse = currentPostData.activityPubUri || currentPostData.postUrl;
   
-  if (activeBtn && activeBtn.dataset.activityPubUri) {
-    // Gebruik de ActivityPub URI als die beschikbaar is
-    postUrlToUse = activeBtn.dataset.activityPubUri;
-  }
-  
-  // Bouw de search URL: instance/search?q=post-url
+  // Bouw de search URL: instance/search?q=activitypub-uri
   // Mastodon zal de post ophalen via ActivityPub
-  const searchUrl = `${normalizedInstance}/search?q=${encodeURIComponent(postUrlToUse)}`;
+  const searchUrl = `${normalizedInstance}/search?q=${encodeURIComponent(postUriToUse)}`;
   
   window.open(searchUrl, '_blank');
   closePostModal();
@@ -163,7 +157,14 @@ export function initModal() {
       const postUrl = btn.dataset.postUrl;
       if (postUrl) {
         event.preventDefault();
-        openPostModal(postUrl);
+        // Verzamel alle benodigde data
+        openPostModal({
+          postUrl: btn.dataset.postUrl || '',
+          activityPubUri: btn.dataset.activityPubUri || '',
+          originalUsername: btn.dataset.originalUsername || '',
+          originalInstance: btn.dataset.originalInstance || '',
+          originalPostId: btn.dataset.originalPostId || ''
+        });
       }
     }
   });
