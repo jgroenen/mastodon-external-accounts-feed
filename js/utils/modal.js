@@ -107,54 +107,41 @@ function handleFormSubmit(event) {
   }
   
   // Bouw de post URL voor de gebruikers instance
-  // Mastodon web interface: https://user-instance/@user@original-instance/post-id
+  // Mastodon format: https://user-instance/@user@original-instance/post-id
+  // De post-id in de URL is de Mastodon ID (numeric)
   try {
     const url = new URL(currentPostUrl);
     const pathParts = url.pathname.split('/').filter(p => p);
     
-    // Zoek de gebruiker (start met @) en post ID (is een nummer)
-    let userPart = '';
+    // Zoek de gebruiker (start met @) en post ID (is een numeriek ID)
+    let username = '';
     let postId = '';
     
     for (let i = 0; i < pathParts.length; i++) {
       const part = pathParts[i];
       if (part.startsWith('@')) {
-        userPart = part;
+        username = part.substring(1); // Verwijder de @
       } else if (/^\d+$/.test(part)) {
         postId = part;
       }
     }
     
-    // Als we geen userPart vonden met @, probeer dan username uit hostname
-    if (!userPart || !userPart.startsWith('@')) {
-      // Probeer @username@instance format uit pathname
-      const atIndex = pathParts.findIndex(p => p.startsWith('@'));
-      if (atIndex !== -1) {
-        userPart = pathParts[atIndex];
-      } else {
-        // Als laatste redmiddel: useer de laatste @ in de URL
-        const atMatch = currentPostUrl.match(/@([^\/]+)/);
-        if (atMatch) {
-          userPart = '@' + atMatch[1];
-        }
+    // Als we geen username vonden, probeer dan uit de URL te halen
+    if (!username) {
+      // Probeer username@instance format
+      const atMatch = currentPostUrl.match(/@([^\/\?#]+)/);
+      if (atMatch) {
+        username = atMatch[1].split('@')[0]; // Neem alleen het username deel
       }
     }
     
-    // Voeg de originale instance toe aan de username
-    // userPart is iets als @gebruiker, we moeten @gebruiker@original-instance maken
-    if (userPart && postId) {
-      // Check of userPart al de vollledige federaal identifier heeft
-      if (userPart.includes('@', 1)) {
-        // userPart is al @gebruiker@instance
-        const newUrl = `${normalizedInstance}/${userPart}/${postId}`;
-        window.open(newUrl, '_blank');
-      } else {
-        // userPart is alleen @gebruiker, voeg @original-instance toe
-        const originalHost = url.hostname;
-        const fullUserPart = `${userPart}@${originalHost}`;
-        const newUrl = `${normalizedInstance}/${fullUserPart}/${postId}`;
-        window.open(newUrl, '_blank');
-      }
+    // Bouw de nieuwe URL
+    if (username && postId) {
+      const originalHost = url.hostname;
+      // Format: @username@original-host
+      const federatedUsername = `@${username}@${originalHost}`;
+      const newUrl = `${normalizedInstance}/${federatedUsername}/${postId}`;
+      window.open(newUrl, '_blank');
     } else {
       // Fallback: open gewoon de originele post
       window.open(currentPostUrl, '_blank');
