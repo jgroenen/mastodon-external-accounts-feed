@@ -7,14 +7,6 @@
 import { Account } from './Account.js';
 import { getFromDB, putInDB } from '../utils/db.js';
 
-// CONSTANTS
-// ============================================
-
-const DB_TABLE = 'lists';
-const EVENT_POSTS_UPDATED = 'postsUpdated';
-
-export class List {
-=======
 // ============================================
 // CONSTANTS
 // ============================================
@@ -22,13 +14,6 @@ export class List {
 const DB_TABLE = 'lists';
 const EVENT_POSTS_UPDATED = 'postsUpdated';
 const BATCH_SIZE = 10; // Number of posts to load per infinite scroll batch
-
-export class List {============================================
-// CONSTANTS
-// ============================================
-
-const DB_TABLE = 'lists';
-const EVENT_POSTS_UPDATED = 'postsUpdated';
 
 export class List {
   constructor(slug, name, accountRefs = []) {
