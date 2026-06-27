@@ -289,6 +289,84 @@
             color: var(--accent-color);
             outline: none;
         }
+        
+        .share-post-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+            transition: border-color 0.2s ease, color 0.2s ease;
+        }
+        
+        .share-post-btn:hover, .share-post-btn:focus {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            outline: none;
+        }
+        
+        .share-post-btn .action-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 0;
+        }
+        
+        /* Share Modal Styles */
+        .share-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            text-align: left;
+        }
+        
+        .share-btn:hover, .share-btn:focus {
+            background-color: var(--surface-color);
+            border-color: var(--accent-color);
+            outline: none;
+        }
+        
+        .share-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        
+        #share-x .share-icon {
+            filter: invert(1);
+        }
+        
+        :root.light-mode #share-x .share-icon {
+            filter: none;
+        }
+        
+        #share-linkedin .share-icon {
+            filter: brightness(0) invert(1);
+        }
+        
+        :root.light-mode #share-linkedin .share-icon {
+            filter: none;
+        }
     </style>
 </head>
 <body>
@@ -338,6 +416,14 @@
                 data-original-instance="{originalInstance}"
                 data-original-post-id="{originalPostId}"
                 data-activitypub-uri="{activityPubUri}">Open post</button>
+        <button class="share-post-btn" 
+                data-post-url="{url}"
+                data-post-content="{shareContent}"
+                data-post-author="{displayName}"
+                aria-label="Deel op andere socials">
+          <img src="img/share.svg" alt="" class="action-icon" loading="lazy">
+          Delen
+        </button>
       </div>
     </article>
   </template>
@@ -356,6 +442,29 @@
     </form>
     <div class="modal-footer">
       <a id="original-post-link" href="#" target="_blank" class="original-link">Open originele post</a>
+    </div>
+    <button class="modal-close" aria-label="Sluiten">&times;</button>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div id="share-modal" class="modal" aria-hidden="true" role="dialog">
+  <div class="modal-content">
+    <h2>Deel op andere socials</h2>
+    <div class="modal-form">
+      <div class="share-options">
+        <button id="share-x" class="share-btn" data-platform="x" aria-label="Deel op X (Twitter)">
+          <img src="img/x.svg" alt="X" class="share-icon" loading="lazy">
+          <span>Deel op X</span>
+        </button>
+        <button id="share-linkedin" class="share-btn" data-platform="linkedin" aria-label="Deel op LinkedIn">
+          <img src="img/linkedin.svg" alt="LinkedIn" class="share-icon" loading="lazy">
+          <span>Deel op LinkedIn</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a id="share-post-link" href="#" target="_blank" class="original-link">Open originele post</a>
     </div>
     <button class="modal-close" aria-label="Sluiten">&times;</button>
   </div>

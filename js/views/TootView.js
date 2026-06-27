@@ -174,6 +174,23 @@ function getIconName(type, count) {
   return prefix + iconMap[type];
 }
 
+/**
+ * Generate share content for social media
+ * Removes HTML tags and truncates if needed
+ */
+function generateShareContent(content) {
+  if (!content) return '';
+  
+  // Remove HTML tags
+  const textContent = content.replace(/<[^>]*>/g, ' ');
+  
+  // Replace multiple spaces and newlines with single space
+  const cleaned = textContent.replace(/\s+/g, ' ').trim();
+  
+  // Truncate to reasonable length for social media
+  return cleaned.length > 280 ? cleaned.substring(0, 280) + '...' : cleaned;
+}
+
 // ============================================
 // MAIN FUNCTION
 // ============================================
@@ -211,6 +228,9 @@ export function createTootElement(post) {
   const originalPostId = post.originalPostId || post.mastodonId || '';
   const activityPubUri = post.activityPubUri || post.url || '';
   
+  // Generate share content (plain text, no HTML)
+  const shareContent = generateShareContent(post.content || '');
+  
   // Replace placeholders with safe defaults
   const replacements = {
     '{mastodonId}': post.mastodonId || '',
@@ -233,7 +253,8 @@ export function createTootElement(post) {
     '{originalUsername}': escapeHtml(originalUsername),
     '{originalInstance}': escapeHtml(originalInstance),
     '{originalPostId}': originalPostId,
-    '{activityPubUri}': escapeHtml(activityPubUri)
+    '{activityPubUri}': escapeHtml(activityPubUri),
+    '{shareContent}': escapeHtml(shareContent)
   };
   
   // Replace all placeholders in the HTML

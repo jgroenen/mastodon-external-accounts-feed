@@ -6,6 +6,7 @@
 import { app } from './models/App.js';
 import { AppView } from './views/AppView.js';
 import { initModal } from './utils/modal.js';
+import { initShareModal } from './utils/ShareModal.js';
 
 // ============================================
 // INITIALIZATION
@@ -15,8 +16,9 @@ async function init() {
   const appView = new AppView();
   appView.initTheme();
   
-  // Initialize modal
+  // Initialize modals
   initModal();
+  initShareModal();
   
   try {
     const config = await fetch('accounts.json').then(res => res.json());
